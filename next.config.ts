@@ -1,7 +1,9 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  assetPrefix: '/web/blogsmith',
   /* config options here */
+  output: 'export', // Added for SSG
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -12,7 +14,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'placehold.co',
+        hostname: 'quarto.nvcr.ai',
         port: '',
         pathname: '/**',
       },
