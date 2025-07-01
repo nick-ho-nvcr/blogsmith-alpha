@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Verdant Tasks',
-  description: 'A simple To-Do list app for managing daily tasks.',
+  title: 'Blogsmith',
+  description: 'Generate high-quality blog posts with AI.',
 };
 
 export default function RootLayout({
