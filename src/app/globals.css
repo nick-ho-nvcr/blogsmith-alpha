@@ -22,7 +22,7 @@
     --muted: 210 40% 90%; /* Muted should be a bit darker than secondary */
     --muted-foreground: 240 5% 45.1%; /* Darker muted text */
 
-    --accent: 6 60% 71%; /* #D98880 - Warm, muted orange */
+    --accent: 12 83% 60%; /* #F06D4E - Vibrant coral */
     --accent-foreground: 0 0% 100%; /* White text for accent elements */
 
     --destructive: 0 84.2% 60.2%;
@@ -35,7 +35,7 @@
     --radius: 0.5rem;
 
     --chart-1: 195 53% 60%;
-    --chart-2: 6 60% 71%;
+    --chart-2: 12 83% 60%;
     --chart-3: 210 40% 50%;
     --chart-4: 195 40% 70%;
     --chart-5: 6 50% 80%;
@@ -69,7 +69,7 @@
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 0 0% 62.9%;
 
-    --accent: 6 60% 71%; /* #D98880 */
+    --accent: 12 83% 60%; /* #F06D4E */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -80,7 +80,7 @@
     --ring: 195 53% 60%;
     
     --chart-1: 195 53% 60%;
-    --chart-2: 6 60% 71%;
+    --chart-2: 12 83% 60%;
     --chart-3: 210 40% 70%;
     --chart-4: 195 40% 50%;
     --chart-5: 6 50% 60%;
