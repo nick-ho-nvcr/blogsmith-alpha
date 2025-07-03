@@ -6,29 +6,38 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Wand2, AlertTriangle } from 'lucide-react';
 
 const formSchema = z.object({
-  idea: z.string().min(10, { message: 'Please describe your blog post idea in at least 10 characters.' }).max(1000, { message: 'Idea cannot exceed 1000 characters.'}),
+  topic: z.string().min(10, { message: 'Topic must be at least 10 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
+  postType: z.string().max(500, { message: 'Post type cannot exceed 500 characters.' }),
+  tone: z.string().max(500, { message: 'Tone cannot exceed 500 characters.' }),
+  books_to_promote: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 interface BlogGenerationFormProps {
-  onSubmit: (data: { idea: string }) => Promise<void>;
+  onSubmit: (data: FormValues) => Promise<void>;
   isGenerating: boolean;
-  isEffectivelyDisabled?: boolean; // Added to explicitly disable for SSG
+  isEffectivelyDisabled?: boolean;
 }
 
 export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabled }: BlogGenerationFormProps) {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      idea: '',
+      topic: 'why math game is important for kid development',
+      postType: '',
+      tone: '',
+      books_to_promote: 'https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids',
     },
   });
 
-  async function handleSubmit(values: z.infer<typeof formSchema>) {
+  async function handleSubmit(values: FormValues) {
     if (isEffectivelyDisabled) return;
     await onSubmit(values);
   }
@@ -38,7 +47,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
       <CardHeader>
         <CardTitle className="font-headline text-2xl text-primary">Craft Your Next Masterpiece</CardTitle>
         <CardDescription>
-          Enter your blog post idea below. Our AI will use this, along with any selected sources, to generate a draft for you.
+          Enter your blog post details below. Our AI will use this, along with any selected sources, to generate a draft for you.
           {isEffectivelyDisabled && (
             <span className="block text-sm text-destructive mt-2 flex items-center">
               <AlertTriangle className="h-4 w-4 mr-1.5" />
@@ -52,28 +61,92 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="idea"
+              name="topic"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="idea" className="text-base font-medium">Blog Post Idea</FormLabel>
+                  <FormLabel htmlFor="topic" className="text-base font-medium">Topic</FormLabel>
                   <FormControl>
-                    <Textarea
-                      id="idea"
-                      placeholder="e.g., 'A beginner's guide to sustainable gardening in urban environments, focusing on balcony setups and easy-to-grow vegetables...'"
+                    <Input
+                      id="topic"
+                      placeholder="e.g., 'The importance of creative play for child development'"
                       {...field}
-                      rows={5}
                       className="text-base focus:ring-accent focus:border-accent"
-                      aria-describedby="idea-description"
                       disabled={isEffectivelyDisabled || isGenerating}
                     />
                   </FormControl>
-                  <p id="idea-description" className="text-sm text-muted-foreground">
-                    Be as descriptive as possible for the best results.
-                  </p>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="postType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="postType" className="text-base font-medium">Post Type</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="postType"
+                      placeholder="e.g., Listicles, how-to guides, roundups..."
+                      {...field}
+                      rows={3}
+                      className="text-base focus:ring-accent focus:border-accent"
+                      disabled={isEffectivelyDisabled || isGenerating}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Default can be listicles, roundups, curated content, article/research recommendations and how-to guides.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="tone" className="text-base font-medium">Tone of Voice</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="tone"
+                      placeholder="e.g., Conversational, professional, humorous..."
+                      {...field}
+                      rows={3}
+                      className="text-base focus:ring-accent focus:border-accent"
+                      disabled={isEffectivelyDisabled || isGenerating}
+                    />
+                  </FormControl>
+                   <FormDescription>
+                    Default is a conversational and semi-professional tone that engages with the reader on a personal level.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="books_to_promote"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="books_to_promote" className="text-base font-medium">Book to Promote (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="books_to_promote"
+                      placeholder="https://example.com/book-link"
+                      {...field}
+                      className="text-base focus:ring-accent focus:border-accent"
+                      disabled={isEffectivelyDisabled || isGenerating}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <Button 
               type="submit" 
               disabled={isGenerating || isEffectivelyDisabled} 

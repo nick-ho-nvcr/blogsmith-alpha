@@ -36,7 +36,7 @@ function PageContent({
   isLoadingSources: boolean;
   handleDeleteSource: (id: string) => Promise<void>;
   isLoadingDelete: string | null;
-  handleGeneratePost: (data: { idea: string }) => Promise<void>;
+  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote?: string | undefined; }) => Promise<void>;
   isGenerating: boolean;
   isGenerationFeatureEnabled: boolean;
 }) {
@@ -192,7 +192,7 @@ export default function Home() {
     }
   };
 
-  const handleGeneratePost = async (data: { idea: string }) => {
+  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote?: string }) => {
     setIsGenerating(true);
     setGeneratedPost(null);
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
@@ -202,13 +202,13 @@ export default function Home() {
     // This example simulates a successful generation after a delay.
     try {
       console.log('Simulating blog post generation with:', {
-        idea: data.idea,
+        ...data,
         selectedSources: selectedSourcesForPost,
       });
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
       const mockPost = {
-        title: `Generated Post: ${data.idea}`,
-        content: `<p>This is a simulated blog post about "${data.idea}".</p><p>It was inspired by ${selectedSourcesForPost.length} sources.</p>`,
+        title: `Generated Post: ${data.topic}`,
+        content: `<p>This is a simulated blog post about "<strong>${data.topic}</strong>".</p><p>It was inspired by <strong>${selectedSourcesForPost.length} sources</strong> and is written in a <em>${data.tone || 'neutral'}</em> tone.</p>${data.books_to_promote ? `<p>It also promotes this book: <a href="${data.books_to_promote}" target="_blank" rel="noopener noreferrer">${data.books_to_promote}</a></p>` : ''}`,
       };
       setGeneratedPost(mockPost);
       toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready below.' });
@@ -260,4 +260,3 @@ export default function Home() {
     </Suspense>
   );
 }
-
