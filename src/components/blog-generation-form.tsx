@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wand2, AlertTriangle } from 'lucide-react';
+import { Loader2, Wand2, AlertTriangle, PlusCircle, Trash2 } from 'lucide-react';
 
 const formSchema = z.object({
   topic: z.string().min(10, { message: 'Topic must be at least 10 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
   postType: z.string().max(500, { message: 'Post type cannot exceed 500 characters.' }),
   tone: z.string().max(500, { message: 'Tone cannot exceed 500 characters.' }),
-  books_to_promote: z.string().url({ message: 'Please enter a valid URL.' }).optional().or(z.literal('')),
+  books_to_promote: z.array(z.string().url({ message: 'Please enter a valid URL.' })).min(1, { message: 'At least one book to promote is required.' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -33,8 +33,13 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
       topic: 'why math game is important for kid development',
       postType: '',
       tone: '',
-      books_to_promote: 'https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids',
+      books_to_promote: ['https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids'],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "books_to_promote"
   });
 
   async function handleSubmit(values: FormValues) {
@@ -127,25 +132,59 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="books_to_promote"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor="books_to_promote" className="text-base font-medium">Book to Promote (Optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      id="books_to_promote"
-                      placeholder="https://example.com/book-link"
-                      {...field}
-                      className="text-base focus:ring-accent focus:border-accent"
-                      disabled={isEffectivelyDisabled || isGenerating}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            <div className="space-y-4">
+              <FormLabel className="text-base font-medium">Books to Promote</FormLabel>
+              <FormDescription>Add one or more book URLs to promote in the post.</FormDescription>
+              {fields.map((field, index) => (
+                <FormField
+                  control={form.control}
+                  key={field.id}
+                  name={`books_to_promote.${index}`}
+                  render={({ field }) => (
+                    <FormItem>
+                       <div className="flex items-center gap-2">
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="https://example.com/book-link"
+                            className="text-base focus:ring-accent focus:border-accent"
+                            disabled={isEffectivelyDisabled || isGenerating}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+                          onClick={() => remove(index)}
+                          disabled={fields.length <= 1 || isEffectivelyDisabled || isGenerating}
+                          aria-label="Remove book URL"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                onClick={() => append("")}
+                disabled={isEffectivelyDisabled || isGenerating}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Book URL
+              </Button>
+               {form.formState.errors.books_to_promote && (
+                <p className="text-sm font-medium text-destructive">
+                  {form.formState.errors.books_to_promote.message}
+                </p>
               )}
-            />
+            </div>
             
             <Button 
               type="submit" 

@@ -36,7 +36,7 @@ function PageContent({
   isLoadingSources: boolean;
   handleDeleteSource: (id: string) => Promise<void>;
   isLoadingDelete: string | null;
-  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote?: string | undefined; }) => Promise<void>;
+  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; }) => Promise<void>;
   isGenerating: boolean;
   isGenerationFeatureEnabled: boolean;
 }) {
@@ -192,7 +192,7 @@ export default function Home() {
     }
   };
 
-  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote?: string }) => {
+  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[] }) => {
     setIsGenerating(true);
     setGeneratedPost(null);
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
@@ -206,9 +206,12 @@ export default function Home() {
         selectedSources: selectedSourcesForPost,
       });
       await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
+      
+      const booksHtml = data.books_to_promote.map(bookUrl => `<li><a href="${bookUrl}" target="_blank" rel="noopener noreferrer">${bookUrl}</a></li>`).join('');
+
       const mockPost = {
         title: `Generated Post: ${data.topic}`,
-        content: `<p>This is a simulated blog post about "<strong>${data.topic}</strong>".</p><p>It was inspired by <strong>${selectedSourcesForPost.length} sources</strong> and is written in a <em>${data.tone || 'neutral'}</em> tone.</p>${data.books_to_promote ? `<p>It also promotes this book: <a href="${data.books_to_promote}" target="_blank" rel="noopener noreferrer">${data.books_to_promote}</a></p>` : ''}`,
+        content: `<p>This is a simulated blog post about "<strong>${data.topic}</strong>".</p><p>It was inspired by <strong>${selectedSourcesForPost.length} sources</strong> and is written in a <em>${data.tone || 'neutral'}</em> tone.</p>${data.books_to_promote.length > 0 ? `<p>It also promotes the following books:</p><ul>${booksHtml}</ul>` : ''}`,
       };
       setGeneratedPost(mockPost);
       toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready below.' });
