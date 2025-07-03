@@ -98,16 +98,6 @@ function PageContent({
         isGenerating={isGenerating}
         isEffectivelyDisabled={!isGenerationFeatureEnabled}
       />
-
-      {isGenerating && isGenerationFeatureEnabled && (
-        <div className="flex flex-col items-center justify-center text-center p-10 border-2 border-dashed border-accent/50 rounded-xl bg-accent/5 min-h-[200px]">
-          <Loader2 className="h-16 w-16 text-accent animate-spin mb-6" />
-          <h3 className="text-2xl font-headline text-accent mb-2">Generating Your Blog Post...</h3>
-          <p className="text-muted-foreground max-w-md">
-            Our AI is hard at work crafting your content. This might take a few moments. Please wait.
-          </p>
-        </div>
-      )}
     </>
   );
 }
@@ -195,7 +185,7 @@ export default function Home() {
 
   const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[] }) => {
     setIsGenerating(true);
-    setGeneratedPost(null);
+    setGeneratedPost({ title: `Generating: ${data.topic}`, content: "" });
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
 
     const prompt = `
@@ -232,7 +222,7 @@ Your response should be ONLY the raw HTML for the blog post content. Start direc
             body: JSON.stringify({
                 inputs: {},
                 query: prompt,
-                response_mode: 'blocking',
+                response_mode: 'streaming',
                 user: 'nouvelle-blogsmith-user',
                 conversation_id: '',
             }),
@@ -242,28 +232,51 @@ Your response should be ONLY the raw HTML for the blog post content. Start direc
             const errorText = await response.text();
             throw new Error(`API Error: ${response.status} - ${errorText}`);
         }
-
-        const result = await response.json();
         
-        if (result.event !== 'message' || !result.answer) {
-             throw new Error('Invalid response from generation service.');
+        if (!response.body) {
+          throw new Error("Response body is null");
         }
 
-        let postTitle = `Generated Post: ${data.topic}`;
-        let postContent = result.answer;
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let leftover = '';
 
-        const titleMatch = result.answer.match(/<h1[^>]*>(.*?)<\/h1>/i);
-        if (titleMatch && titleMatch[1]) {
-            postTitle = titleMatch[1];
-            postContent = result.answer.replace(/<h1[^>]*>.*?<\/h1>/i, '');
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = leftover + decoder.decode(value);
+            const lines = chunk.split('\n\n');
+            
+            leftover = lines.pop() || '';
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const jsonStr = line.substring(6);
+                        const parsed = JSON.parse(jsonStr);
+                        if (parsed.event === 'agent_message' && parsed.answer) {
+                            fullContent += parsed.answer;
+                            
+                            let postTitle = `Generating: ${data.topic}`;
+                            let postContent = fullContent;
+                    
+                            const titleMatch = fullContent.match(/<h1[^>]*>(.*?)<\/h1>/i);
+                            if (titleMatch && titleMatch[1]) {
+                                postTitle = titleMatch[1];
+                                postContent = fullContent.replace(/<h1[^>]*>.*?<\/h1>/i, '');
+                            }
+                            
+                            setGeneratedPost({ title: postTitle, content: postContent });
+                        }
+                    } catch (e) {
+                        console.warn("Could not parse stream chunk: ", e);
+                    }
+                }
+            }
         }
 
-        const newPost: GeneratedBlogPost = {
-            title: postTitle,
-            content: postContent,
-        };
-
-        setGeneratedPost(newPost);
         toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready below.' });
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Generation Failed', description: error.message });
