@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -197,31 +198,81 @@ export default function Home() {
     setGeneratedPost(null);
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
 
-    // This is a placeholder for the generation logic.
-    // If Dify or another service is called, it needs its own auth mechanism (e.g. API Key).
-    // This example simulates a successful generation after a delay.
-    try {
-      console.log('Simulating blog post generation with:', {
-        ...data,
-        selectedSources: selectedSourcesForPost,
-      });
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate network delay
-      
-      const booksHtml = data.books_to_promote.map(bookUrl => `<li><a href="${bookUrl}" target="_blank" rel="noopener noreferrer">${bookUrl}</a></li>`).join('');
+    const prompt = `
+Generate a blog post in HTML format based on the following details.
 
-      const mockPost = {
-        title: `Generated Post: ${data.topic}`,
-        content: `<p>This is a simulated blog post about "<strong>${data.topic}</strong>".</p><p>It was inspired by <strong>${selectedSourcesForPost.length} sources</strong> and is written in a <em>${data.tone || 'neutral'}</em> tone.</p>${data.books_to_promote.length > 0 ? `<p>It also promotes the following books:</p><ul>${booksHtml}</ul>` : ''}`,
-      };
-      setGeneratedPost(mockPost);
-      toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready below.' });
+**Topic**: ${data.topic}
+
+**Desired Post Type/Structure**: ${data.postType || 'A standard article with an introduction, body, and conclusion.'}
+
+**Tone of Voice**: ${data.tone || 'Conversational and semi-professional.'}
+
+**Promotional Links to Include**: 
+${data.books_to_promote.map(book => `- ${book}`).join('\n')}
+Please seamlessly integrate these links into the content where relevant.
+
+**Reference Material**:
+Use the following sources for information and inspiration.
+${selectedSourcesForPost.length > 0 ? selectedSourcesForPost.map(source => `
+- Title: ${source.title}
+  URL: ${source.link}
+  Snippet: ${source.snippet}
+`).join('') : 'No specific sources provided.'}
+
+Your response should be ONLY the raw HTML for the blog post content. Start directly with the first HTML tag (e.g., an <h1> for the title). Do not include markdown fences (\`\`\`html) or any text outside of the HTML itself.
+`;
+
+    try {
+        const response = await fetch('https://dify.nvcr.ai/v1/chat-messages', {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer app-N3dqM0zTq5Crck2Q0ZLefRnA',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                inputs: {},
+                query: prompt,
+                response_mode: 'blocking',
+                user: 'nouvelle-blogsmith-user',
+                conversation_id: '',
+            }),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`API Error: ${response.status} - ${errorText}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.event !== 'message' || !result.answer) {
+             throw new Error('Invalid response from generation service.');
+        }
+
+        let postTitle = `Generated Post: ${data.topic}`;
+        let postContent = result.answer;
+
+        const titleMatch = result.answer.match(/<h1[^>]*>(.*?)<\/h1>/i);
+        if (titleMatch && titleMatch[1]) {
+            postTitle = titleMatch[1];
+            postContent = result.answer.replace(/<h1[^>]*>.*?<\/h1>/i, '');
+        }
+
+        const newPost: GeneratedBlogPost = {
+            title: postTitle,
+            content: postContent,
+        };
+
+        setGeneratedPost(newPost);
+        toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready below.' });
     } catch (error: any) {
-      toast({ variant: 'destructive', title: 'Generation Error', description: error.message });
-      setGeneratedPost({ title: 'Generation Error', content: `<p>${error.message}</p>` });
+        toast({ variant: 'destructive', title: 'Generation Failed', description: error.message });
+        setGeneratedPost({ title: 'Generation Error', content: `<p>There was an issue generating the post. Details: ${error.message}</p>` });
     } finally {
-      setIsGenerating(false);
+        setIsGenerating(false);
     }
   };
+
 
   const isGenerationFeatureEnabled = true;
 
