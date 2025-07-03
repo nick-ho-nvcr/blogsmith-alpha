@@ -126,7 +126,13 @@ export default function Home() {
       setIsLoadingSources(true);
       try {
         const response = await fetch('https://quarto.nvcr.ai/api/blogs', {
-          credentials: 'include', // Crucial for sending HttpOnly cookies cross-domain
+          // todo revert cred
+          credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
+          headers: {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE1NzcyOTUsImlhdCI6MTc1MTQwNDQ5NSwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE0MDQ0OTV9XSwic2Vzc2lvbl9pZCI6ImY1NTQ1NzE5LTM2ZWEtNDBkNy04M2JkLTEzMjZmMmRhYjMxMCIsImlzX2Fub255bW91cyI6ZmFsc2V9.lwra3S4q3H6Gg6piYEYM5640RRWnXh5lVuDxhFjKJ9A",
+            "X-Session-Id": "1234"
+          },
+
         });
 
         if (!response.ok) {
