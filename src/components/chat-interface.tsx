@@ -44,8 +44,8 @@ const AssistantMessage = ({ content }: { content: string }) => {
   const hasSections = Object.keys(parsedMessage).length > 1;
 
   if (!hasOnlyContent && !hasSections && !parsedMessage.content) {
-      // Fallback for empty or unparsable messages
-      return <p className="whitespace-pre-wrap">{content}</p>;
+      // Fallback for empty or unparsable messages. Render as HTML.
+      return <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />;
   }
 
   return (
@@ -56,7 +56,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
             <MessageSquareText className="h-5 w-5" />
             <span>Interaction</span>
           </h4>
-          <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.interaction}</p>
+          <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.interaction }} />
         </section>
       )}
       {parsedMessage.idea && (
@@ -65,7 +65,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
             <HelpCircle className="h-5 w-5" />
             <span>Idea</span>
           </h4>
-          <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.idea}</p>
+          <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
         </section>
       )}
       {parsedMessage.content && (
