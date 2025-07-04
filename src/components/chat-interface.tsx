@@ -6,15 +6,80 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Bot, Loader2 } from 'lucide-react';
+import { Send, User, Bot, Loader2, MessageSquareText, HelpCircle, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-interface ChatInterfaceProps {
-  messages: Message[];
-  onSendMessage: (message: string) => Promise<void>;
-  isResponding: boolean;
-}
+// Helper to parse the AI's sectioned response
+const parseAssistantMessage = (content: string): { [key: string]: string } => {
+  const sections: { [key: string]: string } = {};
+  
+  const headerRegex = /---- (Interaction|Query|Content) ----/;
+  if (!headerRegex.test(content)) {
+    return { content: content };
+  }
+  
+  const splitRegex = /---- (Interaction|Query|Content) ----\n/g;
+  const parts = content.split(splitRegex);
+  
+  for (let i = 1; i < parts.length; i += 2) {
+    const sectionName = parts[i]?.toLowerCase().trim();
+    const sectionContent = parts[i + 1]?.trim();
+    if (sectionName && sectionContent) {
+      sections[sectionName] = sectionContent;
+    }
+  }
+
+  return sections;
+};
+
+// Component to render the parsed assistant message
+const AssistantMessage = ({ content }: { content: string }) => {
+  const parsedMessage = React.useMemo(() => parseAssistantMessage(content), [content]);
+
+  const sectionKeys = Object.keys(parsedMessage);
+
+  if (sectionKeys.length === 0) {
+    return <p className="whitespace-pre-wrap">{content}</p>;
+  }
+
+  if (sectionKeys.length === 1 && sectionKeys[0] === 'content') {
+     return <p className="whitespace-pre-wrap">{parsedMessage.content}</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {parsedMessage.interaction && (
+        <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
+          <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+            <MessageSquareText className="h-5 w-5" />
+            <span>Interaction</span>
+          </h4>
+          <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.interaction}</p>
+        </section>
+      )}
+      {parsedMessage.query && (
+        <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
+          <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+            <HelpCircle className="h-5 w-5" />
+            <span>Query</span>
+          </h4>
+          <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.query}</p>
+        </section>
+      )}
+      {parsedMessage.content && (
+         <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
+            <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+                <FileText className="h-5 w-5" />
+                <span>Content</span>
+            </h4>
+            <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.content}</p>
+        </section>
+      )}
+    </div>
+  );
+};
+
 
 export function ChatInterface({ messages, onSendMessage, isResponding }: ChatInterfaceProps) {
   const [input, setInput] = useState('');
@@ -72,7 +137,7 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: ChatInt
                   )}
                 >
                   {message.role === 'assistant' ? (
-                     <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-headline prose-headings:text-primary prose-p:text-foreground/90 prose-strong:text-foreground prose-a:text-accent hover:prose-a:text-accent/80" dangerouslySetInnerHTML={{ __html: message.content }} />
+                     <AssistantMessage content={message.content} />
                   ) : (
                     <p className="whitespace-pre-wrap">{message.content}</p>
                   )}
