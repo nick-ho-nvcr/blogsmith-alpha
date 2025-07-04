@@ -1,11 +1,10 @@
-
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import type { Source, GeneratedBlogPost } from '@/types';
+import type { Source, Message } from '@/types';
 import { BlogReferences } from '@/components/blog-references';
 import { BlogGenerationForm } from '@/components/blog-generation-form';
-import { GeneratedBlogPost as GeneratedBlogPostDisplay } from '@/components/generated-blog-post';
+import { ChatInterface } from '@/components/chat-interface';
 import { AppHeader } from '@/components/app-header';
 import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
@@ -28,7 +27,7 @@ function PageContent({
   handleDeleteSource,
   isLoadingDelete,
   handleGeneratePost,
-  isGenerating,
+  isResponding,
   isGenerationFeatureEnabled,
 }: {
   sources: Source[];
@@ -38,7 +37,7 @@ function PageContent({
   handleDeleteSource: (id: string) => Promise<void>;
   isLoadingDelete: string | null;
   handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; }) => Promise<void>;
-  isGenerating: boolean;
+  isResponding: boolean;
   isGenerationFeatureEnabled: boolean;
 }) {
   const handleSelectSource = (id: string, selected: boolean) => {
@@ -95,7 +94,7 @@ function PageContent({
 
       <BlogGenerationForm
         onSubmit={handleGeneratePost}
-        isGenerating={isGenerating}
+        isGenerating={isResponding}
         isEffectivelyDisabled={!isGenerationFeatureEnabled}
       />
     </>
@@ -108,8 +107,9 @@ export default function Home() {
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [isLoadingSources, setIsLoadingSources] = useState(true);
   const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedPost, setGeneratedPost] = useState<GeneratedBlogPost | null>(null);
+  const [isResponding, setIsResponding] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -182,25 +182,50 @@ export default function Home() {
       setIsLoadingDelete(null);
     }
   };
+  
+  const processStream = async (reader: ReadableStreamDefaultReader<Uint8Array>, onChunk: (chunk: any) => void) => {
+    const decoder = new TextDecoder();
+    let leftover = '';
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = leftover + decoder.decode(value);
+        const lines = chunk.split('\n\n');
+        
+        leftover = lines.pop() || '';
+
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                try {
+                    const jsonStr = line.substring(6);
+                    const parsed = JSON.parse(jsonStr);
+                    onChunk(parsed);
+                } catch (e) {
+                    console.warn("Could not parse stream chunk: ", e);
+                }
+            }
+        }
+    }
+  };
 
   const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[] }) => {
-    setIsGenerating(true);
-    setGeneratedPost({ title: `Generating: ${data.topic}`, content: "" });
+    setIsResponding(true);
+    setMessages([]);
+    setConversationId(null);
+    
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
 
     const prompt = `
 Generate a blog post in HTML format based on the following details.
 
 **Topic**: ${data.topic}
-
 **Desired Post Type/Structure**: ${data.postType || 'A standard article with an introduction, body, and conclusion.'}
-
 **Tone of Voice**: ${data.tone || 'Conversational and semi-professional.'}
-
 **Promotional Links to Include**: 
 ${data.books_to_promote.map(book => `- ${book}`).join('\n')}
 Please seamlessly integrate these links into the content where relevant.
-
 **Reference Material**:
 Use the following sources for information and inspiration.
 ${selectedSourcesForPost.length > 0 ? selectedSourcesForPost.map(source => `
@@ -237,52 +262,90 @@ Your response should be ONLY the raw HTML for the blog post content. Start direc
           throw new Error("Response body is null");
         }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
         let fullContent = '';
-        let leftover = '';
+        let firstChunk = true;
+        setMessages([{ role: 'assistant', content: '' }]);
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        await processStream(response.body.getReader(), (parsed) => {
+          if (firstChunk && parsed.conversation_id) {
+            setConversationId(parsed.conversation_id);
+            firstChunk = false;
+          }
+          if (parsed.event === 'agent_message' && parsed.answer) {
+              fullContent += parsed.answer;
+              setMessages(prev => [{ ...prev[0], content: fullContent }]);
+          }
+        });
 
-            const chunk = leftover + decoder.decode(value);
-            const lines = chunk.split('\n\n');
-            
-            leftover = lines.pop() || '';
-
-            for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                    try {
-                        const jsonStr = line.substring(6);
-                        const parsed = JSON.parse(jsonStr);
-                        if (parsed.event === 'agent_message' && parsed.answer) {
-                            fullContent += parsed.answer;
-                            
-                            let postTitle = `Generating: ${data.topic}`;
-                            let postContent = fullContent;
-                    
-                            const titleMatch = fullContent.match(/<h1[^>]*>(.*?)<\/h1>/i);
-                            if (titleMatch && titleMatch[1]) {
-                                postTitle = titleMatch[1];
-                                postContent = fullContent.replace(/<h1[^>]*>.*?<\/h1>/i, '');
-                            }
-                            
-                            setGeneratedPost({ title: postTitle, content: postContent });
-                        }
-                    } catch (e) {
-                        console.warn("Could not parse stream chunk: ", e);
-                    }
-                }
-            }
-        }
-
-        toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready below.' });
+        toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready. You can ask for edits below.' });
     } catch (error: any) {
+        const errorMessage = `<p>There was an issue generating the post. Details: ${error.message}</p>`;
+        setMessages([{ role: 'assistant', content: errorMessage }]);
         toast({ variant: 'destructive', title: 'Generation Failed', description: error.message });
-        setGeneratedPost({ title: 'Generation Error', content: `<p>There was an issue generating the post. Details: ${error.message}</p>` });
     } finally {
-        setIsGenerating(false);
+        setIsResponding(false);
+    }
+  };
+
+  const handleSendMessage = async (message: string) => {
+    if (!conversationId) {
+      toast({ variant: 'destructive', title: 'Error', description: 'No active conversation.' });
+      return;
+    }
+    
+    setIsResponding(true);
+    const newUserMessage: Message = { role: 'user', content: message };
+    setMessages(prev => [...prev, newUserMessage]);
+    
+    try {
+      const response = await fetch('https://dify.nvcr.ai/v1/chat-messages', {
+          method: 'POST',
+          headers: {
+              'Authorization': 'Bearer app-N3dqM0zTq5Crck2Q0ZLefRnA',
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              inputs: {},
+              query: message,
+              response_mode: 'streaming',
+              user: 'nouvelle-blogsmith-user',
+              conversation_id: conversationId,
+          }),
+      });
+
+      if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+      
+      if (!response.body) {
+        throw new Error("Response body is null");
+      }
+
+      let fullContent = '';
+      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      
+      await processStream(response.body.getReader(), (parsed) => {
+        if (parsed.event === 'agent_message' && parsed.answer) {
+            fullContent += parsed.answer;
+            setMessages(prev => {
+                const newMessages = [...prev];
+                newMessages[newMessages.length - 1] = { role: 'assistant', content: fullContent };
+                return newMessages;
+            });
+        }
+      });
+      
+    } catch (error: any) {
+        const errorMessage = `<p>There was an issue with the response. Details: ${error.message}</p>`;
+        setMessages(prev => {
+           const newMessages = [...prev];
+           newMessages[newMessages.length - 1] = { role: 'assistant', content: errorMessage };
+           return newMessages;
+        });
+        toast({ variant: 'destructive', title: 'Response Failed', description: error.message });
+    } finally {
+        setIsResponding(false);
     }
   };
 
@@ -314,10 +377,16 @@ Your response should be ONLY the raw HTML for the blog post content. Start direc
               handleDeleteSource={handleDeleteSource}
               isLoadingDelete={isLoadingDelete}
               handleGeneratePost={handleGeneratePost}
-              isGenerating={isGenerating}
+              isResponding={isResponding}
               isGenerationFeatureEnabled={isGenerationFeatureEnabled}
             />
-            {generatedPost && <GeneratedBlogPostDisplay post={generatedPost} />}
+            {messages.length > 0 && (
+              <ChatInterface 
+                messages={messages} 
+                onSendMessage={handleSendMessage}
+                isResponding={isResponding} 
+              />
+            )}
           </>
         )}
       </main>

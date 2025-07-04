@@ -5,7 +5,7 @@ export interface Source {
   snippet: string;
 }
 
-export interface GeneratedBlogPost {
-  title: string;
-  content: string; // HTML content
+export interface Message {
+  role: 'user' | 'assistant';
+  content: string; // HTML content for assistant
 }
