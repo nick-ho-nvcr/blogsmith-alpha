@@ -16,10 +16,10 @@ const formSchema = z.object({
   wordPerPost: z.string().min(1, { message: "Word count is required." }),
   postType: z.string().min(1, { message: 'Post type is required.' }).max(500, { message: 'Post type cannot exceed 500 characters.' }),
   tone: z.string().min(1, { message: 'Tone is required.' }).max(500, { message: 'Tone cannot exceed 500 characters.' }),
-  books_to_promote: z.array(z.string().url({ message: 'Please enter a valid URL.' })).min(1, { message: 'At least one book to promote is required.' }),
+  books_to_promote: z.array(z.object({ value: z.string().url({ message: 'Please enter a valid URL.' }) })).min(1, { message: 'At least one book to promote is required.' }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type FormValues = z.infer<typeof formSchema>;
 
 interface BlogGenerationFormProps {
   onSubmit: (data: FormValues) => Promise<void>;
@@ -35,7 +35,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
       wordPerPost: '500-1000',
       postType: 'Can be listicles, roundups, curated content, article/research recommendations and how-to guides.',
       tone: 'A conversational and semi-professional tone that engages with the reader on a personal level.',
-      books_to_promote: ['https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids'],
+      books_to_promote: [{ value: 'https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids' }],
     },
   });
 
@@ -164,7 +164,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                 <FormField
                   control={form.control}
                   key={field.id}
-                  name={`books_to_promote.${index}`}
+                  name={`books_to_promote.${index}.value`}
                   render={({ field }) => (
                     <FormItem>
                        <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                 variant="outline"
                 size="sm"
                 className="mt-2"
-                onClick={() => append("")}
+                onClick={() => append({ value: "" })}
                 disabled={isEffectivelyDisabled || isGenerating}
               >
                 <PlusCircle className="mr-2 h-4 w-4" />

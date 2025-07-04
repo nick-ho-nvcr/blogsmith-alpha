@@ -4,7 +4,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import type { Source, Message } from '@/types';
 import { BlogReferences } from '@/components/blog-references';
-import { BlogGenerationForm } from '@/components/blog-generation-form';
+import { BlogGenerationForm, type FormValues } from '@/components/blog-generation-form';
 import { ChatInterface } from '@/components/chat-interface';
 import { AppHeader } from '@/components/app-header';
 import { AuthErrorDisplay } from '@/components/auth-error-display';
@@ -38,7 +38,7 @@ function PageContent({
   isLoadingSources: boolean;
   handleDeleteSource: (id: string) => Promise<void>;
   isLoadingDelete: string | null;
-  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost: string; }) => Promise<void>;
+  handleGeneratePost: (data: FormValues) => Promise<void>;
   isResponding: boolean;
   isGenerationFeatureEnabled: boolean;
 }) {
@@ -125,7 +125,6 @@ export default function Home() {
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
             "X-Session-Id": "2676be630e97cc10"
           },
-
         });
 
         if (!response.ok) {
@@ -213,7 +212,7 @@ export default function Home() {
     }
   };
 
-  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost: string; }) => {
+  const handleGeneratePost = async (data: FormValues) => {
     setIsResponding(true);
     setMessages([]);
     setConversationId(null);
@@ -228,7 +227,7 @@ export default function Home() {
       inputs: {
         topic: data.topic,
         word_per_post: data.wordPerPost,
-        books_to_promote: data.books_to_promote,
+        books_to_promote: data.books_to_promote.map(book => book.value),
         post_type: data.postType,
         tone: data.tone,
         references: references,
@@ -241,10 +240,14 @@ export default function Home() {
     try {
         const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify(apiPayload),
+            // todo revert cred
+            credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
+            headers: {
+              'Content-Type': 'application/json',
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
+              "X-Session-Id": "2676be630e97cc10"
+            },
         });
 
         if (!response.ok) {
@@ -283,7 +286,7 @@ export default function Home() {
 
   const handleSendMessage = async (message: string) => {
     if (!conversationId) {
-      toast({ variant: 'destructive', title: 'Error', description: 'No active conversation.' });
+      toast({ variant: 'destructive', title: 'Error', description: 'No active conversation. Please click "Generate Blog Post" to restart' });
       return;
     }
     
@@ -294,14 +297,18 @@ export default function Home() {
     try {
       const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
           method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
           body: JSON.stringify({
               inputs: {},
               query: message,
               conversation_id: conversationId,
           }),
+          // todo revert cred
+          credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
+            "X-Session-Id": "2676be630e97cc10"
+          },
       });
 
       if (!response.ok) {
