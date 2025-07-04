@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wand2, AlertTriangle, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, Wand2, PlusCircle, Trash2 } from 'lucide-react';
 
 const formSchema = z.object({
   topic: z.string().min(10, { message: 'Topic must be at least 10 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
@@ -24,10 +24,9 @@ export type FormValues = z.infer<typeof formSchema>;
 interface BlogGenerationFormProps {
   onSubmit: (data: FormValues) => Promise<void>;
   isGenerating: boolean;
-  isEffectivelyDisabled?: boolean;
 }
 
-export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabled }: BlogGenerationFormProps) {
+export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,7 +44,6 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
   });
 
   async function handleSubmit(values: FormValues) {
-    if (isEffectivelyDisabled) return;
     await onSubmit(values);
   }
 
@@ -55,12 +53,6 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
         <CardTitle className="font-headline text-2xl text-primary">Craft Your Next Masterpiece</CardTitle>
         <CardDescription>
           Enter your blog post details below. Our AI will use this, along with any selected sources, to generate a draft for you.
-          {isEffectivelyDisabled && (
-            <span className="block text-sm text-destructive mt-2 flex items-center">
-              <AlertTriangle className="h-4 w-4 mr-1.5" />
-              Blog generation is disabled for static site export. A backend API is required for this feature.
-            </span>
-          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -78,7 +70,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                       placeholder="e.g., 'The importance of creative play for child development'"
                       {...field}
                       className="text-base focus:ring-accent focus:border-accent"
-                      disabled={isEffectivelyDisabled || isGenerating}
+                      disabled={isGenerating}
                     />
                   </FormControl>
                   <FormMessage />
@@ -98,7 +90,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                       placeholder="e.g., 500-1000"
                       {...field}
                       className="text-base focus:ring-accent focus:border-accent"
-                      disabled={isEffectivelyDisabled || isGenerating}
+                      disabled={isGenerating}
                     />
                   </FormControl>
                   <FormDescription>
@@ -122,7 +114,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                       {...field}
                       rows={3}
                       className="text-base focus:ring-accent focus:border-accent"
-                      disabled={isEffectivelyDisabled || isGenerating}
+                      disabled={isGenerating}
                     />
                   </FormControl>
                   <FormDescription>
@@ -146,7 +138,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                       {...field}
                       rows={3}
                       className="text-base focus:ring-accent focus:border-accent"
-                      disabled={isEffectivelyDisabled || isGenerating}
+                      disabled={isGenerating}
                     />
                   </FormControl>
                    <FormDescription>
@@ -173,7 +165,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                             {...field}
                             placeholder="https://example.com/book-link"
                             className="text-base focus:ring-accent focus:border-accent"
-                            disabled={isEffectivelyDisabled || isGenerating}
+                            disabled={isGenerating}
                           />
                         </FormControl>
                         <Button
@@ -182,7 +174,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                           size="icon"
                           className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
                           onClick={() => remove(index)}
-                          disabled={fields.length <= 1 || isEffectivelyDisabled || isGenerating}
+                          disabled={fields.length <= 1 || isGenerating}
                           aria-label="Remove book URL"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -199,7 +191,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                 size="sm"
                 className="mt-2"
                 onClick={() => append({ value: "" })}
-                disabled={isEffectivelyDisabled || isGenerating}
+                disabled={isGenerating}
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Book URL
@@ -213,9 +205,9 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
             
             <Button 
               type="submit" 
-              disabled={isGenerating || isEffectivelyDisabled} 
+              disabled={isGenerating} 
               className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-              title={isEffectivelyDisabled ? "Blog generation is disabled for static site export." : "Generate Next Blog Post"}
+              title="Generate Next Blog Post"
             >
               {isGenerating ? (
                 <>

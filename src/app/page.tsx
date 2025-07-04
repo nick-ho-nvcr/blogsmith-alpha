@@ -322,7 +322,6 @@ export default function Home() {
 
   const areAllSourcesSelected = sources.length > 0 && selectedSourceIds.length === sources.length;
   const isGenerating = conversations.some(c => c.isGenerating);
-  const isGenerationFeatureEnabled = true;
 
   if (isLoadingSources) {
     return (
@@ -354,7 +353,6 @@ export default function Home() {
             <BlogGenerationForm
               onSubmit={handleGeneratePost}
               isGenerating={isGenerating}
-              isEffectivelyDisabled={!isGenerationFeatureEnabled}
             />
             {conversations.length > 0 && (
               <div className="space-y-8 mt-12">
