@@ -13,9 +13,9 @@ import { Loader2, Wand2, AlertTriangle, PlusCircle, Trash2 } from 'lucide-react'
 
 const formSchema = z.object({
   topic: z.string().min(10, { message: 'Topic must be at least 10 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
-  wordPerPost: z.string().optional(),
-  postType: z.string().max(500, { message: 'Post type cannot exceed 500 characters.' }).optional(),
-  tone: z.string().max(500, { message: 'Tone cannot exceed 500 characters.' }).optional(),
+  wordPerPost: z.string().min(1, { message: "Word count is required." }),
+  postType: z.string().min(1, { message: 'Post type is required.' }).max(500, { message: 'Post type cannot exceed 500 characters.' }),
+  tone: z.string().min(1, { message: 'Tone is required.' }).max(500, { message: 'Tone cannot exceed 500 characters.' }),
   books_to_promote: z.array(z.string().url({ message: 'Please enter a valid URL.' })).min(1, { message: 'At least one book to promote is required.' }),
 });
 
@@ -33,8 +33,8 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
     defaultValues: {
       topic: 'why math game is important for kid development',
       wordPerPost: '500-1000',
-      postType: '',
-      tone: '',
+      postType: 'A standard article with an introduction, body, and conclusion.',
+      tone: 'Conversational and semi-professional.',
       books_to_promote: ['https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids'],
     },
   });
@@ -114,7 +114,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
               name="postType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="postType" className="text-base font-medium">Post Type (Optional)</FormLabel>
+                  <FormLabel htmlFor="postType" className="text-base font-medium">Post Type</FormLabel>
                   <FormControl>
                     <Textarea
                       id="postType"
@@ -126,7 +126,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                     />
                   </FormControl>
                   <FormDescription>
-                    Default can be listicles, roundups, curated content, article/research recommendations and how-to guides.
+                    Describe the structure of the post, e.g., listicle, how-to guide, or roundup.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -138,7 +138,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
               name="tone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="tone" className="text-base font-medium">Tone of Voice (Optional)</FormLabel>
+                  <FormLabel htmlFor="tone" className="text-base font-medium">Tone of Voice</FormLabel>
                   <FormControl>
                     <Textarea
                       id="tone"
@@ -150,7 +150,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                     />
                   </FormControl>
                    <FormDescription>
-                    Default is a conversational and semi-professional tone that engages with the reader on a personal level.
+                    Describe the desired tone of voice for the article.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

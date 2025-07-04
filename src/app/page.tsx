@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -37,7 +38,7 @@ function PageContent({
   isLoadingSources: boolean;
   handleDeleteSource: (id: string) => Promise<void>;
   isLoadingDelete: string | null;
-  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost?: string; }) => Promise<void>;
+  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost: string; }) => Promise<void>;
   isResponding: boolean;
   isGenerationFeatureEnabled: boolean;
 }) {
@@ -212,7 +213,7 @@ export default function Home() {
     }
   };
 
-  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost?: string; }) => {
+  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost: string; }) => {
     setIsResponding(true);
     setMessages([]);
     setConversationId(null);
@@ -226,10 +227,10 @@ export default function Home() {
     const apiPayload = {
       inputs: {
         topic: data.topic,
-        word_per_post: data.wordPerPost || '500-1000',
+        word_per_post: data.wordPerPost,
         books_to_promote: data.books_to_promote,
-        post_type: data.postType || 'A standard article with an introduction, body, and conclusion.',
-        tone: data.tone || 'Conversational and semi-professional.',
+        post_type: data.postType,
+        tone: data.tone,
         references: references,
       },
       query: 'start',
