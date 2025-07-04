@@ -33,18 +33,31 @@ const parseAssistantMessage = (content: string): { [key: string]: string } => {
   return sections;
 };
 
+// Helper to check if a string contains HTML tags
+const isHtml = (str: string) => /<[a-z][\s\S]*>/i.test(str);
+
 // Component to render the parsed assistant message
 const AssistantMessage = ({ content }: { content: string }) => {
   const parsedMessage = React.useMemo(() => parseAssistantMessage(content), [content]);
 
   const sectionKeys = Object.keys(parsedMessage);
 
+  const renderContent = (contentString: string) => {
+    if (isHtml(contentString)) {
+      // For HTML content, we render it directly.
+      // NOTE: This assumes the HTML from the AI is trusted.
+      return <div className="text-foreground/90" dangerouslySetInnerHTML={{ __html: contentString || '' }} />;
+    }
+    // For plain text, we preserve whitespace and newlines.
+    return <p className="whitespace-pre-wrap text-foreground/90">{contentString}</p>;
+  };
+
   if (sectionKeys.length === 0) {
     return <p className="whitespace-pre-wrap">{content}</p>;
   }
 
-  if (sectionKeys.length === 1 && sectionKeys[0] === 'content') {
-     return <p className="whitespace-pre-wrap">{parsedMessage.content}</p>;
+  if (sectionKeys.length === 1 && sectionKeys[0] === 'content' && parsedMessage.content) {
+     return renderContent(parsedMessage.content);
   }
 
   return (
@@ -73,7 +86,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
                 <FileText className="h-5 w-5" />
                 <span>Content</span>
             </h4>
-            <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.content}</p>
+            {renderContent(parsedMessage.content)}
         </section>
       )}
     </div>
