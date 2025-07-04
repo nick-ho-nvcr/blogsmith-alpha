@@ -227,7 +227,7 @@ export default function Home() {
       inputs: {
         topic: data.topic,
         word_per_post: data.wordPerPost,
-        books_to_promote: data.books_to_promote.map(book => book.value),
+        books_to_promote: data.books_to_promote.map(book => book.value).join('\n'),
         post_type: data.postType,
         tone: data.tone,
         references: references,
