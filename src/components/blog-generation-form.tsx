@@ -215,7 +215,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
               type="submit" 
               disabled={isGenerating || isEffectivelyDisabled} 
               className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-              title={isEffectivelyDisabled ? "Blog generation is disabled for static site export." : "Generate Blog Post"}
+              title={isEffectivelyDisabled ? "Blog generation is disabled for static site export." : "Generate Next Blog Post"}
             >
               {isGenerating ? (
                 <>
@@ -225,7 +225,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
               ) : (
                 <>
                   <Wand2 className="mr-2 h-5 w-5" />
-                  Generate Blog Post
+                  Generate Next Blog Post
                 </>
               )}
             </Button>

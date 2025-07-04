@@ -10,3 +10,12 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string; // HTML content for assistant
 }
+
+export interface Conversation {
+  id: string; // Dify conversation_id, starts as a temporary ID
+  topic: string;
+  messages: Message[];
+  isGenerating: boolean;
+}
+
+export type StoredConversation = Omit<Conversation, 'isGenerating'>;

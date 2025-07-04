@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import type { Source, Message } from '@/types';
+import type { Source, Message, Conversation, StoredConversation } from '@/types';
 import { BlogReferences } from '@/components/blog-references';
 import { BlogGenerationForm, type FormValues } from '@/components/blog-generation-form';
 import { ChatInterface } from '@/components/chat-interface';
@@ -10,8 +10,9 @@ import { AppHeader } from '@/components/app-header';
 import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
+import { Loader2, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ApiSource {
   id: string;
@@ -21,135 +22,40 @@ interface ApiSource {
   content: string;
 }
 
-function PageContent({
-  sources,
-  selectedSourceIds,
-  setSelectedSourceIds,
-  isLoadingSources,
-  handleDeleteSource,
-  isLoadingDelete,
-  handleGeneratePost,
-  isResponding,
-  isGenerationFeatureEnabled,
-}: {
-  sources: Source[];
-  selectedSourceIds: string[];
-  setSelectedSourceIds: React.Dispatch<React.SetStateAction<string[]>>;
-  isLoadingSources: boolean;
-  handleDeleteSource: (id: string) => Promise<void>;
-  isLoadingDelete: string | null;
-  handleGeneratePost: (data: FormValues) => Promise<void>;
-  isResponding: boolean;
-  isGenerationFeatureEnabled: boolean;
-}) {
-  const handleSelectSource = (id: string, selected: boolean) => {
-    setSelectedSourceIds((prev) =>
-      selected ? [...prev, id] : prev.filter((sourceId) => sourceId !== id)
-    );
-  };
-
-  const handleToggleSelectAll = () => {
-    if (selectedSourceIds.length === sources.length && sources.length > 0) {
-      setSelectedSourceIds([]);
-    } else {
-      setSelectedSourceIds(sources.map((s) => s.id));
-    }
-  };
-
-  const areAllSourcesSelected = sources.length > 0 && selectedSourceIds.length === sources.length;
-
-  return (
-    <>
-      {isLoadingSources ? (
-        <div className="space-y-6">
-          <Skeleton className="h-12 w-1/2" />
-          <Skeleton className="h-8 w-3/4" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="shadow-lg rounded-xl">
-                <CardHeader>
-                  <Skeleton className="h-6 w-3/4" />
-                  <Skeleton className="h-4 w-1/2 mt-2" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-16 w-full" />
-                </CardContent>
-                <CardFooter>
-                  <Skeleton className="h-8 w-1/3" />
-                  <Skeleton className="h-8 w-10 ml-auto" />
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <BlogReferences
-          sources={sources}
-          selectedSourceIds={selectedSourceIds}
-          onSelect={handleSelectSource}
-          onDelete={handleDeleteSource}
-          isLoadingDelete={isLoadingDelete}
-          onToggleSelectAll={handleToggleSelectAll}
-          areAllSourcesSelected={areAllSourcesSelected}
-        />
-      )}
-
-      <BlogGenerationForm
-        onSubmit={handleGeneratePost}
-        isGenerating={isResponding}
-        isEffectivelyDisabled={!isGenerationFeatureEnabled}
-      />
-    </>
-  );
-}
-
 export default function Home() {
   const { toast } = useToast();
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [isLoadingSources, setIsLoadingSources] = useState(true);
   const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null);
-  const [isResponding, setIsResponding] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // Load chat from session storage on initial render
   useEffect(() => {
     try {
-        const storedMessages = sessionStorage.getItem('chatMessages');
-        const storedConversationId = sessionStorage.getItem('conversationId');
-
-        if (storedMessages) {
-            setMessages(JSON.parse(storedMessages));
-        }
-        if (storedConversationId) {
-            setConversationId(storedConversationId);
+        const stored = sessionStorage.getItem('conversations');
+        if (stored) {
+            const storedConversations: StoredConversation[] = JSON.parse(stored);
+            setConversations(storedConversations.map(c => ({...c, isGenerating: false})));
         }
     } catch (error) {
-        console.error("Failed to load chat from session storage", error);
-        sessionStorage.removeItem('chatMessages');
-        sessionStorage.removeItem('conversationId');
+        console.error("Failed to load conversations from session storage", error);
+        sessionStorage.removeItem('conversations');
     }
   }, []);
 
-  // Save chat to session storage whenever it changes
   useEffect(() => {
       try {
-          if (messages.length > 0) {
-              sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+          if (conversations.length > 0) {
+              const conversationsToStore: StoredConversation[] = conversations.map(({ isGenerating, ...rest }) => rest);
+              sessionStorage.setItem('conversations', JSON.stringify(conversationsToStore));
           } else {
-              sessionStorage.removeItem('chatMessages');
-          }
-          if (conversationId) {
-              sessionStorage.setItem('conversationId', conversationId);
-          } else {
-              sessionStorage.removeItem('conversationId');
+              sessionStorage.removeItem('conversations');
           }
       } catch (error) {
-          console.error("Failed to save chat to session storage", error);
+          console.error("Failed to save conversations to session storage", error);
       }
-  }, [messages, conversationId]);
+  }, [conversations]);
 
 
   useEffect(() => {
@@ -157,8 +63,7 @@ export default function Home() {
       setIsLoadingSources(true);
       try {
         const response = await fetch('https://quarto.nvcr.ai/api/blogs', {
-          // todo revert cred
-          credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
+          credentials: 'omit',
           headers: {
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
             "X-Session-Id": "2676be630e97cc10"
@@ -203,7 +108,7 @@ export default function Home() {
     try {
       const response = await fetch(`https://quarto.nvcr.ai/api/blogs/${id}`, {
         method: 'DELETE',
-        credentials: 'include', // Crucial for sending HttpOnly cookies cross-domain
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -251,12 +156,16 @@ export default function Home() {
   };
 
   const handleGeneratePost = async (data: FormValues) => {
-    setIsResponding(true);
-    setMessages([]);
-    setConversationId(null);
-    
-    const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
+    const tempId = `temp-${Date.now()}`;
+    const newConversation: Conversation = {
+      id: tempId,
+      topic: data.topic,
+      messages: [{ role: 'assistant', content: '' }],
+      isGenerating: true,
+    };
+    setConversations(prev => [newConversation, ...prev]);
 
+    const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
     const references = selectedSourcesForPost
       .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
       .join('\n\n');
@@ -274,13 +183,11 @@ export default function Home() {
       conversation_id: '',
     };
 
-
     try {
         const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
             method: 'POST',
             body: JSON.stringify(apiPayload),
-            // todo revert cred
-            credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
+            credentials: 'omit',
             headers: {
               'Content-Type': 'application/json',
               "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
@@ -298,36 +205,36 @@ export default function Home() {
         }
 
         let fullContent = '';
-        setMessages([{ role: 'assistant', content: '' }]);
-
         await processStream(response.body.getReader(), (parsed) => {
           if (parsed.event === 'message' && parsed.message) {
               fullContent += parsed.message;
-              setMessages(prev => [{ ...prev[0], content: fullContent }]);
+              setConversations(prev => prev.map(c => {
+                  if (c.id === tempId) {
+                      const updatedMessages = [...c.messages];
+                      updatedMessages[0] = { role: 'assistant', content: fullContent };
+                      return { ...c, messages: updatedMessages };
+                  }
+                  return c;
+              }));
           } else if (parsed.event === 'message_end' && parsed.conversation_id) {
-            setConversationId(parsed.conversation_id);
+            setConversations(prev => prev.map(c => 
+                c.id === tempId ? { ...c, id: parsed.conversation_id, isGenerating: false } : c
+            ));
+            toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready. You can ask for edits below.' });
           }
         });
-
-        toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready. You can ask for edits below.' });
     } catch (error: any) {
-        const errorMessage = `<p>There was an issue generating the post. Details: ${error.message}</p>`;
-        setMessages([{ role: 'assistant', content: errorMessage }]);
+        setConversations(prev => prev.filter(c => c.id !== tempId));
         toast({ variant: 'destructive', title: 'Generation Failed', description: error.message });
-    } finally {
-        setIsResponding(false);
     }
   };
 
-  const handleSendMessage = async (message: string) => {
-    if (!conversationId) {
-      toast({ variant: 'destructive', title: 'Error', description: 'No active conversation. Please click "Generate Blog Post" to restart' });
-      return;
-    }
-    
-    setIsResponding(true);
-    const newUserMessage: Message = { role: 'user', content: message };
-    setMessages(prev => [...prev, newUserMessage]);
+  const handleSendMessage = async (message: string, conversationId: string) => {
+    setConversations(prev => prev.map(c => 
+        c.id === conversationId 
+        ? { ...c, messages: [...c.messages, { role: 'user', content: message }], isGenerating: true } 
+        : c
+    ));
     
     try {
       const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
@@ -337,8 +244,7 @@ export default function Home() {
               query: message,
               conversation_id: conversationId,
           }),
-          // todo revert cred
-          credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
+          credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
@@ -355,34 +261,67 @@ export default function Home() {
         throw new Error("Response body is null");
       }
 
+      let isFirstChunk = true;
       let fullContent = '';
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
       
       await processStream(response.body.getReader(), (parsed) => {
         if (parsed.event === 'message' && parsed.message) {
+            if (isFirstChunk) {
+                setConversations(prev => prev.map(c => 
+                    c.id === conversationId 
+                    ? { ...c, messages: [...c.messages, { role: 'assistant', content: '' }] }
+                    : c
+                ));
+                isFirstChunk = false;
+            }
             fullContent += parsed.message;
-            setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = { role: 'assistant', content: fullContent };
-                return newMessages;
-            });
+            setConversations(prev => prev.map(c => {
+                if (c.id === conversationId) {
+                    const newMessages = [...c.messages];
+                    newMessages[newMessages.length - 1] = { role: 'assistant', content: fullContent };
+                    return { ...c, messages: newMessages };
+                }
+                return c;
+            }));
         }
       });
       
     } catch (error: any) {
         const errorMessage = `<p>There was an issue with the response. Details: ${error.message}</p>`;
-        setMessages(prev => {
-           const newMessages = [...prev];
-           newMessages[newMessages.length - 1] = { role: 'assistant', content: errorMessage };
-           return newMessages;
-        });
+        setConversations(prev => prev.map(c => {
+           if (c.id === conversationId) {
+             const newMessages = [...c.messages, {role: 'assistant', content: errorMessage}];
+             return {...c, messages: newMessages};
+           }
+           return c;
+        }));
         toast({ variant: 'destructive', title: 'Response Failed', description: error.message });
     } finally {
-        setIsResponding(false);
+        setConversations(prev => prev.map(c => c.id === conversationId ? { ...c, isGenerating: false } : c));
     }
   };
 
+  const handleDeleteConversation = (id: string) => {
+    setConversations(prev => prev.filter(c => c.id !== id));
+    toast({ title: "Conversation Removed" });
+  };
+  
+  const handleSelectSource = (id: string, selected: boolean) => {
+    setSelectedSourceIds((prev) =>
+      selected ? [...prev, id] : prev.filter((sourceId) => sourceId !== id)
+    );
+  };
 
+  const handleToggleSelectAll = () => {
+    if (selectedSourceIds.length === sources.length && sources.length > 0) {
+      setSelectedSourceIds([]);
+    } else {
+      setSelectedSourceIds(sources.map((s) => s.id));
+    }
+  };
+
+  const areAllSourcesSelected = sources.length > 0 && selectedSourceIds.length === sources.length;
+  const isGenerating = conversations.some(c => c.isGenerating);
   const isGenerationFeatureEnabled = true;
 
   if (isLoadingSources) {
@@ -402,23 +341,42 @@ export default function Home() {
           <AuthErrorDisplay error={authError} />
         ) : (
           <>
-            <PageContent
+            <BlogReferences
               sources={sources}
               selectedSourceIds={selectedSourceIds}
-              setSelectedSourceIds={setSelectedSourceIds}
-              isLoadingSources={isLoadingSources}
-              handleDeleteSource={handleDeleteSource}
+              onSelect={handleSelectSource}
+              onDelete={handleDeleteSource}
               isLoadingDelete={isLoadingDelete}
-              handleGeneratePost={handleGeneratePost}
-              isResponding={isResponding}
-              isGenerationFeatureEnabled={isGenerationFeatureEnabled}
+              onToggleSelectAll={handleToggleSelectAll}
+              areAllSourcesSelected={areAllSourcesSelected}
             />
-            {messages.length > 0 && (
-              <ChatInterface 
-                messages={messages} 
-                onSendMessage={handleSendMessage}
-                isResponding={isResponding} 
-              />
+
+            <BlogGenerationForm
+              onSubmit={handleGeneratePost}
+              isGenerating={isGenerating}
+              isEffectivelyDisabled={!isGenerationFeatureEnabled}
+            />
+            {conversations.length > 0 && (
+              <div className="space-y-8 mt-12">
+                <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
+                {conversations.map(convo => (
+                  <Card key={convo.id} className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteConversation(convo.id)} aria-label="Delete conversation">
+                            <Trash2 className="h-5 w-5 text-destructive" />
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <ChatInterface 
+                        messages={convo.messages} 
+                        onSendMessage={(message) => handleSendMessage(message, convo.id)}
+                        isResponding={convo.isGenerating} 
+                      />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
           </>
         )}
