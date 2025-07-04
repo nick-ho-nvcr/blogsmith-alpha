@@ -15,12 +15,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 const parseAssistantMessage = (content: string): { [key: string]: string } => {
   const sections: { [key: string]: string } = {};
   
-  const headerRegex = /---- (Interaction|Idea|Query|Content) ----/;
+  const headerRegex = /---- (Interaction|Idea|Content) ----/;
   if (!headerRegex.test(content)) {
     return { content: content };
   }
   
-  const splitRegex = /---- (Interaction|Idea|Query|Content) ----\n/g;
+  const splitRegex = /---- (Interaction|Idea|Content) ----\n/g;
   const parts = content.split(splitRegex);
   
   for (let i = 1; i < parts.length; i += 2) {
@@ -68,22 +68,13 @@ const AssistantMessage = ({ content }: { content: string }) => {
           <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.idea}</p>
         </section>
       )}
-      {parsedMessage.query && (
-        <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
-          <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
-            <HelpCircle className="h-5 w-5" />
-            <span>Query</span>
-          </h4>
-          <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.query}</p>
-        </section>
-      )}
       {parsedMessage.content && (
          <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
             <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
                 <FileText className="h-5 w-5" />
                 <span>Content</span>
             </h4>
-            <div className="text-foreground/90" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
+            <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
         </section>
       )}
     </div>
