@@ -3,6 +3,7 @@ export interface Source {
   title: string;
   link: string;
   snippet: string;
+  content: string;
 }
 
 export interface Message {

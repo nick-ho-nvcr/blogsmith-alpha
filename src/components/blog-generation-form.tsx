@@ -13,8 +13,9 @@ import { Loader2, Wand2, AlertTriangle, PlusCircle, Trash2 } from 'lucide-react'
 
 const formSchema = z.object({
   topic: z.string().min(10, { message: 'Topic must be at least 10 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
-  postType: z.string().max(500, { message: 'Post type cannot exceed 500 characters.' }),
-  tone: z.string().max(500, { message: 'Tone cannot exceed 500 characters.' }),
+  wordPerPost: z.string().optional(),
+  postType: z.string().max(500, { message: 'Post type cannot exceed 500 characters.' }).optional(),
+  tone: z.string().max(500, { message: 'Tone cannot exceed 500 characters.' }).optional(),
   books_to_promote: z.array(z.string().url({ message: 'Please enter a valid URL.' })).min(1, { message: 'At least one book to promote is required.' }),
 });
 
@@ -31,6 +32,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
     resolver: zodResolver(formSchema),
     defaultValues: {
       topic: 'why math game is important for kid development',
+      wordPerPost: '500-1000',
       postType: '',
       tone: '',
       books_to_promote: ['https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids'],
@@ -83,13 +85,36 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="wordPerPost"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="wordPerPost" className="text-base font-medium">Word Count</FormLabel>
+                  <FormControl>
+                    <Input
+                      id="wordPerPost"
+                      placeholder="e.g., 500-1000"
+                      {...field}
+                      className="text-base focus:ring-accent focus:border-accent"
+                      disabled={isEffectivelyDisabled || isGenerating}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Provide a target word count range for the post.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
               name="postType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="postType" className="text-base font-medium">Post Type</FormLabel>
+                  <FormLabel htmlFor="postType" className="text-base font-medium">Post Type (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       id="postType"
@@ -113,7 +138,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
               name="tone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="tone" className="text-base font-medium">Tone of Voice</FormLabel>
+                  <FormLabel htmlFor="tone" className="text-base font-medium">Tone of Voice (Optional)</FormLabel>
                   <FormControl>
                     <Textarea
                       id="tone"

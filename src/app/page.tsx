@@ -17,6 +17,7 @@ interface ApiSource {
   title: string;
   url: string;
   excerpt: string;
+  content: string;
 }
 
 function PageContent({
@@ -36,7 +37,7 @@ function PageContent({
   isLoadingSources: boolean;
   handleDeleteSource: (id: string) => Promise<void>;
   isLoadingDelete: string | null;
-  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; }) => Promise<void>;
+  handleGeneratePost: (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost?: string; }) => Promise<void>;
   isResponding: boolean;
   isGenerationFeatureEnabled: boolean;
 }) {
@@ -121,7 +122,7 @@ export default function Home() {
           credentials: 'omit', // Crucial for sending HttpOnly cookies cross-domain
           headers: {
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE3NTE4NzcsImlhdCI6MTc1MTU3OTA3NywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE1NzkwNzd9XSwic2Vzc2lvbl9pZCI6IjI4MGYxZTE5LWM2MjItNGFlMy1hMzJmLTJhYTdmNWY1NTA2YSIsImlzX2Fub255bW91cyI6ZmFsc2V9.PlQZWHbcCsv-pPdjL4oT9Mds3QSCaFcnrIOD8gJ7j1I",
-            "X-Session-Id": "1234"
+            "X-Session-Id": "2676be630e97cc10"
           },
 
         });
@@ -140,6 +141,7 @@ export default function Home() {
             title: item.title,
             link: item.url,
             snippet: item.excerpt,
+            content: item.content,
           }));
           setSources(fetchedSources);
           setSelectedSourceIds(fetchedSources.map((s) => s.id));
@@ -210,32 +212,32 @@ export default function Home() {
     }
   };
 
-  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[] }) => {
+  const handleGeneratePost = async (data: { topic: string; postType: string; tone: string; books_to_promote: string[]; wordPerPost?: string; }) => {
     setIsResponding(true);
     setMessages([]);
     setConversationId(null);
     
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
 
-    const prompt = `
-Generate a blog post in HTML format based on the following details.
+    const references = selectedSourcesForPost
+      .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
+      .join('\n\n');
+    
+    const apiPayload = {
+      inputs: {
+        topic: data.topic,
+        word_per_post: data.wordPerPost || '500-1000',
+        books_to_promote: data.books_to_promote,
+        post_type: data.postType || 'A standard article with an introduction, body, and conclusion.',
+        tone: data.tone || 'Conversational and semi-professional.',
+        references: references,
+      },
+      query: 'start',
+      response_mode: 'streaming',
+      user: 'nouvelle-blogsmith-user',
+      conversation_id: '',
+    };
 
-**Topic**: ${data.topic}
-**Desired Post Type/Structure**: ${data.postType || 'A standard article with an introduction, body, and conclusion.'}
-**Tone of Voice**: ${data.tone || 'Conversational and semi-professional.'}
-**Promotional Links to Include**: 
-${data.books_to_promote.map(book => `- ${book}`).join('\n')}
-Please seamlessly integrate these links into the content where relevant.
-**Reference Material**:
-Use the following sources for information and inspiration.
-${selectedSourcesForPost.length > 0 ? selectedSourcesForPost.map(source => `
-- Title: ${source.title}
-  URL: ${source.link}
-  Snippet: ${source.snippet}
-`).join('') : 'No specific sources provided.'}
-
-Your response should be ONLY the raw HTML for the blog post content. Start directly with the first HTML tag (e.g., an <h1> for the title). Do not include markdown fences (\`\`\`html) or any text outside of the HTML itself.
-`;
 
     try {
         const response = await fetch('https://dify.nvcr.ai/v1/chat-messages', {
@@ -244,13 +246,7 @@ Your response should be ONLY the raw HTML for the blog post content. Start direc
                 'Authorization': 'Bearer app-N3dqM0zTq5Crck2Q0ZLefRnA',
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                inputs: {},
-                query: prompt,
-                response_mode: 'streaming',
-                user: 'nouvelle-blogsmith-user',
-                conversation_id: '',
-            }),
+            body: JSON.stringify(apiPayload),
         });
 
         if (!response.ok) {
