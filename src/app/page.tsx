@@ -234,17 +234,14 @@ export default function Home() {
         references: references,
       },
       query: 'start',
-      response_mode: 'streaming',
-      user: 'nouvelle-blogsmith-user',
       conversation_id: '',
     };
 
 
     try {
-        const response = await fetch('https://dify.nvcr.ai/v1/chat-messages', {
+        const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
             method: 'POST',
             headers: {
-                'Authorization': 'Bearer app-N3dqM0zTq5Crck2Q0ZLefRnA',
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(apiPayload),
@@ -295,17 +292,14 @@ export default function Home() {
     setMessages(prev => [...prev, newUserMessage]);
     
     try {
-      const response = await fetch('https://dify.nvcr.ai/v1/chat-messages', {
+      const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
           method: 'POST',
           headers: {
-              'Authorization': 'Bearer app-N3dqM0zTq5Crck2Q0ZLefRnA',
               'Content-Type': 'application/json',
           },
           body: JSON.stringify({
               inputs: {},
               query: message,
-              response_mode: 'streaming',
-              user: 'nouvelle-blogsmith-user',
               conversation_id: conversationId,
           }),
       });

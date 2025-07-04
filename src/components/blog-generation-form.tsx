@@ -33,8 +33,8 @@ export function BlogGenerationForm({ onSubmit, isGenerating, isEffectivelyDisabl
     defaultValues: {
       topic: 'why math game is important for kid development',
       wordPerPost: '500-1000',
-      postType: 'A standard article with an introduction, body, and conclusion.',
-      tone: 'Conversational and semi-professional.',
+      postType: 'Can be listicles, roundups, curated content, article/research recommendations and how-to guides.',
+      tone: 'A conversational and semi-professional tone that engages with the reader on a personal level.',
       books_to_promote: ['https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids'],
     },
   });
