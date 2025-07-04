@@ -367,24 +367,24 @@ export default function Home() {
                   {conversations.map(convo => (
                     <AccordionItem value={convo.id} key={convo.id} className="border-none">
                       <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
-                        <AccordionTrigger className="p-0 w-full hover:no-underline [&>svg]:mx-6">
-                            <CardHeader className="flex flex-row items-center justify-between w-full">
-                                <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    onClick={(e) => { 
-                                        e.stopPropagation();
-                                        handleDeleteConversation(convo.id);
-                                    }} 
-                                    aria-label="Delete conversation"
-                                >
-                                    <Trash2 className="h-5 w-5 text-destructive" />
-                                </Button>
-                            </CardHeader>
-                        </AccordionTrigger>
+                        <div className="flex w-full items-center">
+                          <AccordionTrigger className="flex-1 p-6 text-left hover:no-underline">
+                              <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
+                          </AccordionTrigger>
+                          <div className="pr-4">
+                              <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteConversation(convo.id)}
+                                  aria-label="Delete conversation"
+                              >
+                                  <Trash2 className="h-5 w-5 text-destructive" />
+                              </Button>
+                          </div>
+                        </div>
                         <AccordionContent>
                           <CardContent>
+                            {convo.formValues && convo.selectedSources && (
                              <Card className="mb-6 p-4 border-dashed bg-muted/30">
                                 <CardHeader className="p-2">
                                     <CardTitle className="font-headline text-lg flex items-center gap-2">
@@ -415,6 +415,7 @@ export default function Home() {
                                     </div>
                                 </CardContent>
                              </Card>
+                            )}
                             <ChatInterface 
                               messages={convo.messages} 
                               onSendMessage={(message) => handleSendMessage(message, convo.id)}
