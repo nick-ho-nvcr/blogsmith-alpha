@@ -44,7 +44,7 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: ChatInt
       <CardHeader>
         <CardTitle className="font-headline text-3xl tracking-tight text-primary flex items-center gap-3">
             <Bot />
-            Blog Post Iteration
+            Blog Post Smith
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
