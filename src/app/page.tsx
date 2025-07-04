@@ -114,6 +114,44 @@ export default function Home() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
 
+  // Load chat from session storage on initial render
+  useEffect(() => {
+    try {
+        const storedMessages = sessionStorage.getItem('chatMessages');
+        const storedConversationId = sessionStorage.getItem('conversationId');
+
+        if (storedMessages) {
+            setMessages(JSON.parse(storedMessages));
+        }
+        if (storedConversationId) {
+            setConversationId(storedConversationId);
+        }
+    } catch (error) {
+        console.error("Failed to load chat from session storage", error);
+        sessionStorage.removeItem('chatMessages');
+        sessionStorage.removeItem('conversationId');
+    }
+  }, []);
+
+  // Save chat to session storage whenever it changes
+  useEffect(() => {
+      try {
+          if (messages.length > 0) {
+              sessionStorage.setItem('chatMessages', JSON.stringify(messages));
+          } else {
+              sessionStorage.removeItem('chatMessages');
+          }
+          if (conversationId) {
+              sessionStorage.setItem('conversationId', conversationId);
+          } else {
+              sessionStorage.removeItem('conversationId');
+          }
+      } catch (error) {
+          console.error("Failed to save chat to session storage", error);
+      }
+  }, [messages, conversationId]);
+
+
   useEffect(() => {
     const fetchSources = async () => {
       setIsLoadingSources(true);
