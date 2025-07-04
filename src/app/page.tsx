@@ -10,9 +10,12 @@ import { AppHeader } from '@/components/app-header';
 import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
-import { Loader2, Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import { Loader2, Trash2, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+
 
 interface ApiSource {
   id: string;
@@ -157,15 +160,18 @@ export default function Home() {
 
   const handleGeneratePost = async (data: FormValues) => {
     const tempId = `temp-${Date.now()}`;
+    const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
+    
     const newConversation: Conversation = {
       id: tempId,
       topic: data.topic,
       messages: [{ role: 'assistant', content: '' }],
       isGenerating: true,
+      formValues: data,
+      selectedSources: selectedSourcesForPost,
     };
     setConversations(prev => [newConversation, ...prev]);
 
-    const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
     const references = selectedSourcesForPost
       .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
       .join('\n\n');
@@ -357,23 +363,69 @@ export default function Home() {
             {conversations.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
-                {conversations.map(convo => (
-                  <Card key={convo.id} className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteConversation(convo.id)} aria-label="Delete conversation">
-                            <Trash2 className="h-5 w-5 text-destructive" />
-                        </Button>
-                    </CardHeader>
-                    <CardContent>
-                      <ChatInterface 
-                        messages={convo.messages} 
-                        onSendMessage={(message) => handleSendMessage(message, convo.id)}
-                        isResponding={convo.isGenerating} 
-                      />
-                    </CardContent>
-                  </Card>
-                ))}
+                <Accordion type="single" collapsible className="w-full space-y-4">
+                  {conversations.map(convo => (
+                    <AccordionItem value={convo.id} key={convo.id} className="border-none">
+                      <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
+                        <AccordionTrigger className="p-0 w-full hover:no-underline [&>svg]:mx-6">
+                            <CardHeader className="flex flex-row items-center justify-between w-full">
+                                <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    onClick={(e) => { 
+                                        e.stopPropagation();
+                                        handleDeleteConversation(convo.id);
+                                    }} 
+                                    aria-label="Delete conversation"
+                                >
+                                    <Trash2 className="h-5 w-5 text-destructive" />
+                                </Button>
+                            </CardHeader>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <CardContent>
+                             <Card className="mb-6 p-4 border-dashed bg-muted/30">
+                                <CardHeader className="p-2">
+                                    <CardTitle className="font-headline text-lg flex items-center gap-2">
+                                        <Info className="h-5 w-5 text-primary" />
+                                        Generation Details
+                                    </CardTitle>
+                                    <CardDescription>
+                                        This idea was generated using the following settings and sources.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-2 text-sm space-y-3">
+                                    <p><strong>Word Count:</strong> {convo.formValues.wordPerPost}</p>
+                                    <p><strong>Post Type:</strong> {convo.formValues.postType}</p>
+                                    <p><strong>Tone:</strong> {convo.formValues.tone}</p>
+                                    <div>
+                                        <strong>Books to Promote:</strong>
+                                        <ul className="list-disc list-inside">
+                                            {convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
+                                        <div className="flex flex-wrap gap-2">
+                                        {convo.selectedSources.length > 0 ? convo.selectedSources.map(source => (
+                                            <Badge key={source.id} variant="secondary">{source.title}</Badge>
+                                        )) : <p className="text-muted-foreground">No sources were selected.</p>}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                             </Card>
+                            <ChatInterface 
+                              messages={convo.messages} 
+                              onSendMessage={(message) => handleSendMessage(message, convo.id)}
+                              isResponding={convo.isGenerating} 
+                            />
+                          </CardContent>
+                        </AccordionContent>
+                      </Card>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               </div>
             )}
           </>

@@ -1,3 +1,5 @@
+import type { FormValues } from '@/components/blog-generation-form';
+
 export interface Source {
   id: string;
   title: string;
@@ -16,6 +18,8 @@ export interface Conversation {
   topic: string;
   messages: Message[];
   isGenerating: boolean;
+  formValues: FormValues;
+  selectedSources: Source[];
 }
 
 export type StoredConversation = Omit<Conversation, 'isGenerating'>;
