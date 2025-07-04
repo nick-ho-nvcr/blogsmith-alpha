@@ -380,7 +380,7 @@ export default function Home() {
                     <AccordionItem value={convo.id} key={convo.id} className="border-none">
                       <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
                         <div className="flex w-full items-center">
-                          <AccordionTrigger className="flex-1 p-6 text-left hover:no-underline">
+                          <AccordionTrigger className="flex-1 p-6 text-left">
                               <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
                           </AccordionTrigger>
                           <div className="pr-4">
