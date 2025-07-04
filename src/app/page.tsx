@@ -260,17 +260,14 @@ export default function Home() {
         }
 
         let fullContent = '';
-        let firstChunk = true;
         setMessages([{ role: 'assistant', content: '' }]);
 
         await processStream(response.body.getReader(), (parsed) => {
-          if (firstChunk && parsed.conversation_id) {
-            setConversationId(parsed.conversation_id);
-            firstChunk = false;
-          }
-          if (parsed.event === 'agent_message' && parsed.answer) {
-              fullContent += parsed.answer;
+          if (parsed.event === 'message' && parsed.message) {
+              fullContent += parsed.message;
               setMessages(prev => [{ ...prev[0], content: fullContent }]);
+          } else if (parsed.event === 'message_end' && parsed.conversation_id) {
+            setConversationId(parsed.conversation_id);
           }
         });
 
@@ -324,8 +321,8 @@ export default function Home() {
       setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
       
       await processStream(response.body.getReader(), (parsed) => {
-        if (parsed.event === 'agent_message' && parsed.answer) {
-            fullContent += parsed.answer;
+        if (parsed.event === 'message' && parsed.message) {
+            fullContent += parsed.message;
             setMessages(prev => {
                 const newMessages = [...prev];
                 newMessages[newMessages.length - 1] = { role: 'assistant', content: fullContent };
