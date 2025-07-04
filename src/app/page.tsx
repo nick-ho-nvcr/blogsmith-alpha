@@ -33,6 +33,7 @@ export default function Home() {
   const [isLoadingDelete, setIsLoadingDelete] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>();
 
   useEffect(() => {
     try {
@@ -171,6 +172,7 @@ export default function Home() {
       selectedSources: selectedSourcesForPost,
     };
     setConversations(prev => [newConversation, ...prev]);
+    setActiveAccordionItem(tempId);
 
     const references = selectedSourcesForPost
       .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
@@ -226,6 +228,7 @@ export default function Home() {
             setConversations(prev => prev.map(c => 
                 c.id === tempId ? { ...c, id: parsed.conversation_id, isGenerating: false } : c
             ));
+            setActiveAccordionItem(parsed.conversation_id);
             toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready. You can ask for edits below.' });
           }
         });
@@ -309,6 +312,9 @@ export default function Home() {
 
   const handleDeleteConversation = (id: string) => {
     setConversations(prev => prev.filter(c => c.id !== id));
+    if (activeAccordionItem === id) {
+      setActiveAccordionItem(undefined);
+    }
     toast({ title: "Conversation Removed" });
   };
   
@@ -363,7 +369,13 @@ export default function Home() {
             {conversations.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
-                <Accordion type="single" collapsible className="w-full space-y-4">
+                <Accordion 
+                  type="single" 
+                  collapsible 
+                  className="w-full space-y-4"
+                  value={activeAccordionItem}
+                  onValueChange={setActiveAccordionItem}
+                >
                   {conversations.map(convo => (
                     <AccordionItem value={convo.id} key={convo.id} className="border-none">
                       <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
@@ -375,7 +387,10 @@ export default function Home() {
                               <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleDeleteConversation(convo.id)}
+                                  onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteConversation(convo.id);
+                                  }}
                                   aria-label="Delete conversation"
                               >
                                   <Trash2 className="h-5 w-5 text-destructive" />
