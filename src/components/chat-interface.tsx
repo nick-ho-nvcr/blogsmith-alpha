@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -14,12 +15,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 const parseAssistantMessage = (content: string): { [key: string]: string } => {
   const sections: { [key: string]: string } = {};
   
-  const headerRegex = /---- (Interaction|Query|Content) ----/;
+  const headerRegex = /---- (Interaction|Idea|Query|Content) ----/;
   if (!headerRegex.test(content)) {
     return { content: content };
   }
   
-  const splitRegex = /---- (Interaction|Query|Content) ----\n/g;
+  const splitRegex = /---- (Interaction|Idea|Query|Content) ----\n/g;
   const parts = content.split(splitRegex);
   
   for (let i = 1; i < parts.length; i += 2) {
@@ -33,31 +34,18 @@ const parseAssistantMessage = (content: string): { [key: string]: string } => {
   return sections;
 };
 
-// Helper to check if a string contains HTML tags
-const isHtml = (str: string) => /<[a-z][\s\S]*>/i.test(str);
-
 // Component to render the parsed assistant message
 const AssistantMessage = ({ content }: { content: string }) => {
   const parsedMessage = React.useMemo(() => parseAssistantMessage(content), [content]);
 
-  const sectionKeys = Object.keys(parsedMessage);
+  // If the parser returns nothing, or if it returns an object where the only key is 'content'
+  // (meaning no section headers were found), we'll let the main renderer handle it.
+  const hasOnlyContent = Object.keys(parsedMessage).length === 1 && parsedMessage.content;
+  const hasSections = Object.keys(parsedMessage).length > 1;
 
-  const renderContent = (contentString: string) => {
-    if (isHtml(contentString)) {
-      // For HTML content, we render it directly.
-      // NOTE: This assumes the HTML from the AI is trusted.
-      return <div className="text-foreground/90" dangerouslySetInnerHTML={{ __html: contentString || '' }} />;
-    }
-    // For plain text, we preserve whitespace and newlines.
-    return <p className="whitespace-pre-wrap text-foreground/90">{contentString}</p>;
-  };
-
-  if (sectionKeys.length === 0) {
-    return <p className="whitespace-pre-wrap">{content}</p>;
-  }
-
-  if (sectionKeys.length === 1 && sectionKeys[0] === 'content' && parsedMessage.content) {
-     return renderContent(parsedMessage.content);
+  if (!hasOnlyContent && !hasSections && !parsedMessage.content) {
+      // Fallback for empty or unparsable messages
+      return <p className="whitespace-pre-wrap">{content}</p>;
   }
 
   return (
@@ -69,6 +57,15 @@ const AssistantMessage = ({ content }: { content: string }) => {
             <span>Interaction</span>
           </h4>
           <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.interaction}</p>
+        </section>
+      )}
+      {parsedMessage.idea && (
+        <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
+          <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+            <HelpCircle className="h-5 w-5" />
+            <span>Idea</span>
+          </h4>
+          <p className="whitespace-pre-wrap text-foreground/90">{parsedMessage.idea}</p>
         </section>
       )}
       {parsedMessage.query && (
@@ -86,7 +83,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
                 <FileText className="h-5 w-5" />
                 <span>Content</span>
             </h4>
-            {renderContent(parsedMessage.content)}
+            <div className="text-foreground/90" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
         </section>
       )}
     </div>
@@ -94,7 +91,11 @@ const AssistantMessage = ({ content }: { content: string }) => {
 };
 
 
-export function ChatInterface({ messages, onSendMessage, isResponding }: ChatInterfaceProps) {
+export function ChatInterface({ messages, onSendMessage, isResponding }: {
+    messages: Message[];
+    onSendMessage: (message: string) => Promise<void>;
+    isResponding: boolean;
+}) {
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
