@@ -223,41 +223,47 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
       <CardContent className="pt-6">
         <ScrollArea className="h-[500px] pr-4" ref={scrollAreaRef}>
           <div className="space-y-6">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={cn(
-                  'flex items-start gap-4',
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                )}
-              >
-                {message.role === 'assistant' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
-                  </Avatar>
-                )}
+            {messages.map((message, index) => {
+              if (message.role === 'assistant' && message.content.trim() === '') {
+                return null;
+              }
+
+              return (
                 <div
+                  key={index}
                   className={cn(
-                    'max-w-[85%] rounded-lg p-4 shadow-md',
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                    'flex items-start gap-4',
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
                   )}
                 >
-                  {message.role === 'assistant' ? (
-                     <AssistantMessage content={message.content} />
-                  ) : (
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  {message.role === 'assistant' && (
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
+                    </Avatar>
                   )}
-                 
+                  <div
+                    className={cn(
+                      'max-w-[85%] rounded-lg p-4 shadow-md',
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted'
+                    )}
+                  >
+                    {message.role === 'assistant' ? (
+                       <AssistantMessage content={message.content} />
+                    ) : (
+                      <p className="whitespace-pre-wrap">{message.content}</p>
+                    )}
+                   
+                  </div>
+                   {message.role === 'user' && (
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      <AvatarFallback><User className="h-5 w-5"/></AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
-                 {message.role === 'user' && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarFallback><User className="h-5 w-5"/></AvatarFallback>
-                  </Avatar>
-                )}
-              </div>
-            ))}
+              );
+            })}
              {isResponding && messages.length > 0 && (messages[messages.length - 1].role === 'user' || messages[messages.length - 1].content.trim() === '') && (
                 <div className="flex items-start gap-4 justify-start">
                     <Avatar className="h-8 w-8 flex-shrink-0">
