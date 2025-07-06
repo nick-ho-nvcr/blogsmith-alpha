@@ -15,19 +15,27 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 const parseAssistantMessage = (content: string): { [key: string]: string } => {
   const sections: { [key: string]: string } = {};
   
-  const headerRegex = /---- (Interaction|Idea|Content) ----/;
-  if (!headerRegex.test(content)) {
-    return { content: content };
+  // A more robust regex allowing for optional space and different newline chars.
+  const splitRegex = /----\s*(Interaction|Idea|Content)\s*----(?:\r?\n)?/g;
+  
+  const parts = content.split(splitRegex);
+
+  // If the split operation didn't find any separators, the array will have only one element.
+  if (parts.length <= 1) {
+    return { content: content.trim() }; // No sections found, return everything as content
   }
   
-  const splitRegex = /---- (Interaction|Idea|Content) ----\n/g;
-  const parts = content.split(splitRegex);
+  // The first part of the split array is the content before the first separator.
+  const initialContent = parts[0]?.trim();
+  if (initialContent) {
+    sections.interaction = initialContent; // Assume pre-header content is interaction
+  }
   
   for (let i = 1; i < parts.length; i += 2) {
     const sectionName = parts[i]?.toLowerCase().trim();
     const sectionContent = parts[i + 1]?.trim();
     if (sectionName && sectionContent) {
-      sections[sectionName] = sectionContent;
+      sections[sectionName] = (sections[sectionName] || '') + sectionContent;
     }
   }
 
@@ -38,14 +46,12 @@ const parseAssistantMessage = (content: string): { [key: string]: string } => {
 const AssistantMessage = ({ content }: { content: string }) => {
   const parsedMessage = React.useMemo(() => parseAssistantMessage(content), [content]);
 
-  // If the parser returns nothing, or if it returns an object where the only key is 'content'
-  // (meaning no section headers were found), we'll let the main renderer handle it.
-  const hasOnlyContent = Object.keys(parsedMessage).length === 1 && parsedMessage.content;
-  const hasSections = Object.keys(parsedMessage).length > 1;
+  const isStructured = parsedMessage.interaction || parsedMessage.idea;
 
-  if (!hasOnlyContent && !hasSections && !parsedMessage.content) {
-      // Fallback for empty or unparsable messages. Render as HTML.
-      return <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: content }} />;
+  if (!isStructured) {
+    // If not structured, just render the content block, which might be the whole message.
+    const renderContent = parsedMessage.content || content;
+    return <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: renderContent }} />;
   }
 
   return (
