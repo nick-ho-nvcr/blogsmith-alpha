@@ -274,7 +274,7 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
         </ScrollArea>
 
         {/* Action Buttons */}
-        <div className="mt-4 pt-4 border-t flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-4 pt-4 border-t flex flex-wrap items-center justify-start gap-2">
             <Button variant="outline" asChild>
               <a href="#blog-generation-form">
                 <Wand2 />
