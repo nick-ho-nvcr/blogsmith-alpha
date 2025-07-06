@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Bot, Loader2, MessageSquareText, HelpCircle, FileText, Expand } from 'lucide-react';
+import { Send, User, Bot, Loader2, MessageSquareText, HelpCircle, FileText, Expand, Wand2, PencilLine, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -155,6 +156,20 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
 }) {
   const [input, setInput] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
+
+  const lastAssistantMessage = React.useMemo(() => 
+    messages.filter(m => m.role === 'assistant').pop(), 
+    [messages]
+  );
+  
+  const parsedLastMessage = React.useMemo(() => 
+    lastAssistantMessage ? parseAssistantMessage(lastAssistantMessage.content) : {}, 
+    [lastAssistantMessage]
+  );
+
+  const showWriteContentButton = !!parsedLastMessage.idea;
+  const showCopyContentButton = !!parsedLastMessage.content;
 
   useEffect(() => {
     // A more robust way to scroll to bottom.
@@ -174,6 +189,29 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
     setInput('');
     await onSendMessage(messageToSend);
   };
+  
+  const handleWriteContent = () => {
+    onSendMessage("This is a great idea. Please write the full blog post content based on this idea.");
+  };
+
+  const handleCopyContent = () => {
+    if (parsedLastMessage.content) {
+      navigator.clipboard.writeText(parsedLastMessage.content).then(() => {
+        toast({
+          title: "Content Copied!",
+          description: "The post content has been copied to your clipboard.",
+        })
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        toast({
+          variant: 'destructive',
+          title: "Copy Failed",
+          description: "Could not copy content to clipboard.",
+        })
+      });
+    }
+  };
+
 
   return (
     <Card className="mt-8 shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
@@ -234,7 +272,32 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
              )}
           </div>
         </ScrollArea>
-        <form onSubmit={handleSendMessage} className="mt-6 flex items-center gap-4 border-t pt-6">
+
+        {/* Action Buttons */}
+        <div className="mt-4 pt-4 border-t flex flex-wrap items-center justify-center gap-2">
+            <Button variant="outline" asChild>
+              <a href="#blog-generation-form">
+                <Wand2 />
+                Generate Another Idea
+              </a>
+            </Button>
+            
+            {showWriteContentButton && (
+                <Button variant="outline" onClick={handleWriteContent} disabled={isResponding}>
+                    <PencilLine />
+                    Write Full Post
+                </Button>
+            )}
+
+            {showCopyContentButton && (
+                <Button variant="outline" onClick={handleCopyContent}>
+                    <Copy />
+                    Copy Content
+                </Button>
+            )}
+        </div>
+
+        <form onSubmit={handleSendMessage} className="mt-4 flex items-center gap-4">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

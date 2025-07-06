@@ -362,10 +362,13 @@ export default function Home() {
               areAllSourcesSelected={areAllSourcesSelected}
             />
 
-            <BlogGenerationForm
-              onSubmit={handleGeneratePost}
-              isGenerating={isGenerating}
-            />
+            <div id="blog-generation-form" className="scroll-mt-20">
+              <BlogGenerationForm
+                onSubmit={handleGeneratePost}
+                isGenerating={isGenerating}
+              />
+            </div>
+
             {conversations.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
