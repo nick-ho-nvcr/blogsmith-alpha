@@ -80,19 +80,19 @@ const AssistantMessage = ({ content }: { content: string }) => {
 
       {parsedMessage.idea && (
          <Dialog open={isIdeaDialogOpen} onOpenChange={setIdeaDialogOpen}>
-          <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
-            <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
-              <HelpCircle className="h-5 w-5" />
-              <span>Idea</span>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
+          <DialogTrigger asChild>
+            <section className="p-3 rounded-md border border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
+              <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+                <HelpCircle className="h-5 w-5" />
+                <span>Idea</span>
+                <div className="ml-auto h-6 w-6 flex items-center justify-center text-muted-foreground">
                   <Expand className="h-4 w-4" />
                   <span className="sr-only">Enlarge Idea</span>
-                </Button>
-              </DialogTrigger>
-            </h4>
-            <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
-          </section>
+                </div>
+              </h4>
+              <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
+            </section>
+          </DialogTrigger>
           <DialogContent className="sm:max-w-5xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
@@ -109,23 +109,23 @@ const AssistantMessage = ({ content }: { content: string }) => {
 
       {parsedMessage.content && (
         <Dialog open={isContentDialogOpen} onOpenChange={setContentDialogOpen}>
-          <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
-            <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
-              <FileText className="h-5 w-5" />
-              <span>Content</span>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
+          <DialogTrigger asChild>
+            <section className="p-3 rounded-md border border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
+              <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+                <FileText className="h-5 w-5" />
+                <span>Content</span>
+                <div className="ml-auto h-6 w-6 flex items-center justify-center text-muted-foreground">
                   <Expand className="h-4 w-4" />
                   <span className="sr-only">Enlarge Content</span>
-                </Button>
-              </DialogTrigger>
-            </h4>
-             {hasHtml(parsedMessage.content) ? (
-                <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
-              ) : (
-                <div className="text-foreground/90 whitespace-pre-wrap">{parsedMessage.content}</div>
-              )}
-          </section>
+                </div>
+              </h4>
+               {hasHtml(parsedMessage.content) ? (
+                  <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
+                ) : (
+                  <div className="text-foreground/90 whitespace-pre-wrap">{parsedMessage.content}</div>
+                )}
+            </section>
+          </DialogTrigger>
           <DialogContent className="sm:max-w-5xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
