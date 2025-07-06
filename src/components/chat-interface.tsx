@@ -24,29 +24,29 @@ const parseAssistantMessage = (content: string): { [key: string]: string } => {
   const sections: { [key: string]: string } = {};
   const splitRegex = /----\s*(Interaction|Idea|Content)\s*----(?:\r?\n)?/g;
   
-  const parts = content.split(splitRegex);
-
-  // If no sections found, treat everything as a single content block.
-  if (parts.length <= 1) {
-    const trimmedContent = content.trim();
-    if (trimmedContent) {
-        return { content: trimmedContent };
-    }
-    return {};
+  // First, handle content that might appear before any section header
+  const initialSplit = content.split(splitRegex);
+  const firstChunk = initialSplit[0]?.trim();
+  if (firstChunk) {
+    sections.interaction = firstChunk;
   }
   
-  // Content before the first header is considered interaction.
-  const initialContent = parts[0]?.trim();
-  if (initialContent) {
-    sections.interaction = initialContent;
-  }
-  
-  for (let i = 1; i < parts.length; i += 2) {
-    const sectionName = parts[i]?.toLowerCase().trim();
-    const sectionContent = parts[i + 1]?.trim();
+  // Process the rest of the message for defined sections
+  for (let i = 1; i < initialSplit.length; i += 2) {
+    const sectionName = initialSplit[i]?.toLowerCase().trim();
+    const sectionContent = initialSplit[i + 1]?.trim();
     if (sectionName && sectionContent) {
       sections[sectionName] = (sections[sectionName] || '') + sectionContent;
     }
+  }
+
+  // If after all that, we have no sections, treat the whole thing as content.
+  if (Object.keys(sections).length === 0) {
+    const trimmedContent = content.trim();
+    if (trimmedContent) {
+      return { content: trimmedContent };
+    }
+    return {};
   }
 
   return sections;
@@ -93,7 +93,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
             </h4>
             <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
           </section>
-          <DialogContent className="sm:max-w-3xl">
+          <DialogContent className="sm:max-w-5xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
                 <HelpCircle className="h-6 w-6" />
@@ -126,7 +126,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
                 <div className="text-foreground/90 whitespace-pre-wrap">{parsedMessage.content}</div>
               )}
           </section>
-          <DialogContent className="sm:max-w-3xl">
+          <DialogContent className="sm:max-w-5xl">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
                 <FileText className="h-6 w-6" />
