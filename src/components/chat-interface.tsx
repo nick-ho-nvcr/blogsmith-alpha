@@ -60,10 +60,9 @@ const AssistantMessage = ({ content }: { content: string }) => {
   
   const parsedMessage = React.useMemo(() => parseAssistantMessage(content), [content]);
 
-  const isStructured = parsedMessage.interaction || parsedMessage.idea || parsedMessage.content;
   const hasHtml = (str: string) => /<[a-z][\s\S]*>/i.test(str);
 
-  if (!isStructured) {
+  if (Object.keys(parsedMessage).length === 0) {
     return null; // Don't render empty messages
   }
 
@@ -259,7 +258,7 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
                 )}
               </div>
             ))}
-             {isResponding && messages.length > 0 && messages[messages.length - 1]?.role === 'user' && (
+             {isResponding && messages.length > 0 && (messages[messages.length - 1].role === 'user' || messages[messages.length - 1].content.trim() === '') && (
                 <div className="flex items-start gap-4 justify-start">
                     <Avatar className="h-8 w-8 flex-shrink-0">
                         <AvatarFallback><Bot className="h-5 w-5"/></AvatarFallback>
