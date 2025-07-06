@@ -7,28 +7,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, User, Bot, Loader2, MessageSquareText, HelpCircle, FileText } from 'lucide-react';
+import { Send, User, Bot, Loader2, MessageSquareText, HelpCircle, FileText, Expand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
 
 // Helper to parse the AI's sectioned response
 const parseAssistantMessage = (content: string): { [key: string]: string } => {
   const sections: { [key: string]: string } = {};
-  
-  // A more robust regex allowing for optional space and different newline chars.
   const splitRegex = /----\s*(Interaction|Idea|Content)\s*----(?:\r?\n)?/g;
   
   const parts = content.split(splitRegex);
 
-  // If the split operation didn't find any separators, the array will have only one element.
+  // If no sections found, treat everything as a single content block.
   if (parts.length <= 1) {
-    return { content: content.trim() }; // No sections found, return everything as content
+    const trimmedContent = content.trim();
+    if (trimmedContent) {
+        return { content: trimmedContent };
+    }
+    return {};
   }
   
-  // The first part of the split array is the content before the first separator.
+  // Content before the first header is considered interaction.
   const initialContent = parts[0]?.trim();
   if (initialContent) {
-    sections.interaction = initialContent; // Assume pre-header content is interaction
+    sections.interaction = initialContent;
   }
   
   for (let i = 1; i < parts.length; i += 2) {
@@ -44,14 +54,16 @@ const parseAssistantMessage = (content: string): { [key: string]: string } => {
 
 // Component to render the parsed assistant message
 const AssistantMessage = ({ content }: { content: string }) => {
+  const [isIdeaDialogOpen, setIdeaDialogOpen] = React.useState(false);
+  const [isContentDialogOpen, setContentDialogOpen] = React.useState(false);
+  
   const parsedMessage = React.useMemo(() => parseAssistantMessage(content), [content]);
 
-  const isStructured = parsedMessage.interaction || parsedMessage.idea;
+  const isStructured = parsedMessage.interaction || parsedMessage.idea || parsedMessage.content;
+  const hasHtml = (str: string) => /<[a-z][\s\S]*>/i.test(str);
 
   if (!isStructured) {
-    // If not structured, just render the content block, which might be the whole message.
-    const renderContent = parsedMessage.content || content;
-    return <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: renderContent }} />;
+    return null; // Don't render empty messages
   }
 
   return (
@@ -65,23 +77,71 @@ const AssistantMessage = ({ content }: { content: string }) => {
           <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.interaction }} />
         </section>
       )}
+
       {parsedMessage.idea && (
-        <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
-          <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
-            <HelpCircle className="h-5 w-5" />
-            <span>Idea</span>
-          </h4>
-          <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
-        </section>
-      )}
-      {parsedMessage.content && (
-         <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
+         <Dialog open={isIdeaDialogOpen} onOpenChange={setIdeaDialogOpen}>
+          <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
             <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
-                <FileText className="h-5 w-5" />
-                <span>Content</span>
+              <HelpCircle className="h-5 w-5" />
+              <span>Idea</span>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
+                  <Expand className="h-4 w-4" />
+                  <span className="sr-only">Enlarge Idea</span>
+                </Button>
+              </DialogTrigger>
             </h4>
-            <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
-        </section>
+            <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
+          </section>
+          <DialogContent className="sm:max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
+                <HelpCircle className="h-6 w-6" />
+                Idea
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[70vh] pr-6">
+              <div className="text-foreground/90 prose max-w-none dark:prose-invert py-4" dangerouslySetInnerHTML={{ __html: parsedMessage.idea }} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {parsedMessage.content && (
+        <Dialog open={isContentDialogOpen} onOpenChange={setContentDialogOpen}>
+          <section className="p-3 rounded-md border border-primary/20 bg-primary/5">
+            <h4 className="flex items-center gap-2 mb-2 font-headline text-lg font-medium text-primary">
+              <FileText className="h-5 w-5" />
+              <span>Content</span>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="ml-auto h-6 w-6">
+                  <Expand className="h-4 w-4" />
+                  <span className="sr-only">Enlarge Content</span>
+                </Button>
+              </DialogTrigger>
+            </h4>
+             {hasHtml(parsedMessage.content) ? (
+                <div className="text-foreground/90 prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
+              ) : (
+                <div className="text-foreground/90 whitespace-pre-wrap">{parsedMessage.content}</div>
+              )}
+          </section>
+          <DialogContent className="sm:max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
+                <FileText className="h-6 w-6" />
+                Content
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[70vh] pr-6">
+               {hasHtml(parsedMessage.content) ? (
+                <div className="text-foreground/90 prose max-w-none dark:prose-invert py-4" dangerouslySetInnerHTML={{ __html: parsedMessage.content }} />
+              ) : (
+                <div className="text-foreground/90 whitespace-pre-wrap py-4">{parsedMessage.content}</div>
+              )}
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
