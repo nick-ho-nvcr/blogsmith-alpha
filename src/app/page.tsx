@@ -11,7 +11,7 @@ import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Info, Lightbulb, Expand } from 'lucide-react';
+import { Loader2, Trash2, Info, Lightbulb, Expand, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -84,7 +84,7 @@ export default function Home() {
               sessionStorage.removeItem('conversations');
           }
           if (generatedIdeas.length > 0) {
-            const ideasToStore = generatedIdeas.filter(idea => !idea.isLoading);
+            const ideasToStore = generatedIdeas.filter(idea => !idea.isLoading && !idea.isGeneratingPost);
             if (ideasToStore.length > 0) {
               sessionStorage.setItem('generatedIdeas', JSON.stringify(ideasToStore));
             } else {
@@ -292,34 +292,38 @@ export default function Home() {
   };
 
 
-  const handleGeneratePost = async (data: FormValues) => {
-    const tempId = `temp-${Date.now()}`;
-    const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
+  const handleGeneratePostFromIdea = async (idea: GeneratedIdea) => {
+    // Mark this specific idea as generating a post
+    setGeneratedIdeas(prev => prev.map(i => i.id === idea.id ? { ...i, isGeneratingPost: true } : i));
     
+    const tempId = `temp-${Date.now()}`;
+    const { formValues, selectedSources, content: ideaContent } = idea;
+
     const newConversation: Conversation = {
       id: tempId,
-      topic: data.topic,
+      topic: formValues.topic,
       messages: [{ role: 'assistant', content: '' }],
       isGenerating: true,
-      formValues: data,
-      selectedSources: selectedSourcesForPost,
+      formValues: formValues,
+      selectedSources: selectedSources,
     };
     setConversations(prev => [newConversation, ...prev]);
     setActiveAccordionItem(tempId);
 
-    const references = selectedSourcesForPost
+    const references = selectedSources
       .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
       .join('\n\n');
     
     const apiPayload = {
       inputs: {
-        topic: data.topic,
-        description: data.description || '',
-        word_per_post: data.wordPerPost,
-        books_to_promote: data.books_to_promote.map(book => book.value).join('\n'),
-        post_type: data.postType,
-        tone: data.tone,
+        topic: formValues.topic,
+        description: formValues.description || '',
+        word_per_post: formValues.wordPerPost,
+        books_to_promote: formValues.books_to_promote.map(book => book.value).join('\n'),
+        post_type: formValues.postType,
+        tone: formValues.tone,
         references: references,
+        idea: ideaContent, // Pass the idea content
       },
       query: 'start',
       conversation_id: '',
@@ -369,6 +373,9 @@ export default function Home() {
     } catch (error: any) {
         setConversations(prev => prev.filter(c => c.id !== tempId));
         toast({ variant: 'destructive', title: 'Generation Failed', description: error.message });
+    } finally {
+        // Unmark the idea as generating
+        setGeneratedIdeas(prev => prev.map(i => i.id === idea.id ? { ...i, isGeneratingPost: false } : i));
     }
   };
 
@@ -472,7 +479,7 @@ export default function Home() {
   };
 
   const areAllSourcesSelected = sources.length > 0 && selectedSourceIds.length === sources.length;
-  const isGeneratingPost = conversations.some(c => c.isGenerating);
+  const isGeneratingPost = conversations.some(c => c.isGenerating) || generatedIdeas.some(i => i.isGeneratingPost);
   const isGenerating = isGeneratingPost || isGeneratingIdeas;
 
   if (isLoadingSources) {
@@ -504,9 +511,7 @@ export default function Home() {
 
             <div id="blog-generation-form" className="scroll-mt-20">
               <BlogGenerationForm
-                onGeneratePost={handleGeneratePost}
                 onGenerateIdeas={handleGenerateIdeas}
-                isGeneratingPost={isGeneratingPost}
                 isGeneratingIdeas={isGeneratingIdeas}
               />
             </div>
@@ -527,32 +532,48 @@ export default function Home() {
                           ) : (
                             <>
                               <DialogTrigger asChild>
-                                  <div className="cursor-pointer hover:bg-primary/5 transition-colors w-full h-full">
-                                      <CardHeader>
-                                          <div className="flex justify-between items-start">
-                                          <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                              <Lightbulb className="h-5 w-5 text-primary" />
-                                              <p>{createSummary(idea.content, 10)}</p>
-                                          </CardTitle>
-                                          <div className="flex items-center gap-2">
-                                              <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
-                                                  <Expand className="h-4 w-4" />
-                                                  <span className="sr-only">Enlarge Idea</span>
-                                              </div>
-                                              <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  onClick={(e) => { e.stopPropagation(); handleDeleteIdea(idea.id); }}
-                                                  aria-label="Delete idea"
-                                              >
-                                                  <Trash2 className="h-5 w-5 text-destructive" />
-                                              </Button>
-                                          </div>
-                                          </div>
-                                      </CardHeader>
+                                  <div className="cursor-pointer hover:bg-primary/5 transition-colors w-full h-full p-6">
+                                    <div className="flex justify-between items-start">
+                                    <CardTitle className="font-headline text-xl flex items-center gap-2">
+                                        <Lightbulb className="h-5 w-5 text-primary" />
+                                        <p>{createSummary(idea.content, 10)}</p>
+                                    </CardTitle>
+                                    <div className="flex items-center gap-2 -mt-2 -mr-2">
+                                        <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
+                                            <Expand className="h-4 w-4" />
+                                            <span className="sr-only">Enlarge Idea</span>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => { e.stopPropagation(); handleDeleteIdea(idea.id); }}
+                                            aria-label="Delete idea"
+                                            disabled={idea.isGeneratingPost}
+                                        >
+                                            <Trash2 className="h-5 w-5 text-destructive" />
+                                        </Button>
+                                    </div>
+                                    </div>
                                   </div>
                               </DialogTrigger>
-                             <CardFooter>
+                             <CardFooter className="flex-col items-start gap-4">
+                                <Button
+                                  onClick={() => handleGeneratePostFromIdea(idea)}
+                                  disabled={isGenerating}
+                                  className="w-full bg-accent hover:bg-accent/90"
+                                >
+                                  {idea.isGeneratingPost ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                      Generating Post...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Wand2 className="mr-2 h-5 w-5" />
+                                      Generate Post from this Idea
+                                    </>
+                                  )}
+                                </Button>
                                <Accordion type="single" collapsible className="w-full">
                                  <AccordionItem value="details" className="border-none">
                                    <AccordionTrigger className="text-sm p-2 hover:no-underline">View Generation Details</AccordionTrigger>

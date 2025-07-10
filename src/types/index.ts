@@ -31,4 +31,5 @@ export interface GeneratedIdea {
     formValues: FormValues;
     selectedSources: Source[];
     isLoading?: boolean;
+    isGeneratingPost?: boolean;
 }

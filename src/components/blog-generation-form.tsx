@@ -23,13 +23,11 @@ const formSchema = z.object({
 export type FormValues = z.infer<typeof formSchema>;
 
 interface BlogGenerationFormProps {
-  onGeneratePost: (data: FormValues) => Promise<void>;
   onGenerateIdeas: (data: FormValues) => Promise<void>;
-  isGeneratingPost: boolean;
   isGeneratingIdeas: boolean;
 }
 
-export function BlogGenerationForm({ onGeneratePost, onGenerateIdeas, isGeneratingPost, isGeneratingIdeas }: BlogGenerationFormProps) {
+export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogGenerationFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,19 +45,19 @@ export function BlogGenerationForm({ onGeneratePost, onGenerateIdeas, isGenerati
     name: "books_to_promote"
   });
 
-  const isGenerating = isGeneratingPost || isGeneratingIdeas;
+  const isGenerating = isGeneratingIdeas;
 
   return (
     <Card className="shadow-lg rounded-xl overflow-hidden">
       <CardHeader>
         <CardTitle className="font-headline text-2xl text-primary">Craft Your Next Masterpiece</CardTitle>
         <CardDescription>
-          Enter your blog post details below. Our AI will use this, along with any selected sources, to generate a draft for you.
+          Enter your blog post details below. Our AI will use this, along with any selected sources, to generate ideas for you.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onGeneratePost)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onGenerateIdeas)} className="space-y-6">
             <FormField
               control={form.control}
               name="topic"
@@ -231,8 +229,7 @@ export function BlogGenerationForm({ onGeneratePost, onGenerateIdeas, isGenerati
             
             <div className="flex flex-wrap gap-4">
               <Button 
-                type="button"
-                onClick={form.handleSubmit(onGenerateIdeas)}
+                type="submit"
                 disabled={isGenerating} 
                 className="bg-primary/90 hover:bg-primary text-primary-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
                 title="Generate 3 blog post ideas"
@@ -249,24 +246,6 @@ export function BlogGenerationForm({ onGeneratePost, onGenerateIdeas, isGenerati
                   </>
                 )}
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isGenerating} 
-                className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                title="Generate Next Blog Post"
-              >
-                {isGeneratingPost ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="mr-2 h-5 w-5" />
-                    Generate Next Blog Post
-                  </>
-                )}
-              </Button>
             </div>
           </form>
         </Form>
@@ -274,5 +253,3 @@ export function BlogGenerationForm({ onGeneratePost, onGenerateIdeas, isGenerati
     </Card>
   );
 }
-
-    
