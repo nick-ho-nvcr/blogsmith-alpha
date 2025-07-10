@@ -550,9 +550,6 @@ export default function Home() {
                                           </div>
                                           </div>
                                       </CardHeader>
-                                      <CardContent className="flex-grow">
-                                          <div className="prose prose-sm max-w-none dark:prose-invert line-clamp-3" dangerouslySetInnerHTML={{ __html: idea.content }} />
-                                      </CardContent>
                                   </div>
                               </DialogTrigger>
                              <CardFooter>
