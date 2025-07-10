@@ -209,8 +209,18 @@ export default function Home() {
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
 
-      const responseText = await response.text();
-      const ideas = responseText.split('---- idea ----').map(idea => idea.trim()).filter(idea => idea);
+      if (!response.body) {
+        throw new Error("Response body is null");
+      }
+
+      let fullContent = '';
+      await processStream(response.body.getReader(), (parsed) => {
+        if (parsed.event === 'message' && parsed.message) {
+          fullContent += parsed.message;
+        }
+      });
+      
+      const ideas = fullContent.split('---- idea ----').map(idea => idea.trim()).filter(idea => idea);
 
       const newIdeas: GeneratedIdea[] = ideas.map((ideaContent, index) => {
         const tempId = `temp-idea-${Date.now()}-${index}`;
