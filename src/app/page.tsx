@@ -514,7 +514,7 @@ export default function Home() {
             {generatedIdeas.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {generatedIdeas.map(idea => (
                      <Dialog key={idea.id}>
                         <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col">
@@ -532,7 +532,7 @@ export default function Home() {
                                           <div className="flex justify-between items-start">
                                           <CardTitle className="font-headline text-xl flex items-center gap-2">
                                               <Lightbulb className="h-5 w-5 text-primary" />
-                                              <p>{createSummary(idea.content, 50)}</p>
+                                              <p>{createSummary(idea.content, 10)}</p>
                                           </CardTitle>
                                           <div className="flex items-center gap-2">
                                               <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
