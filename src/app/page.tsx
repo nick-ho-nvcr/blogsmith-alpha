@@ -178,6 +178,7 @@ export default function Home() {
         tone: data.tone,
         references: references,
       },
+      query: 'start',
     };
 
     try {
