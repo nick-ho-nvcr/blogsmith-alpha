@@ -69,7 +69,7 @@ export default function Home() {
         const response = await fetch('https://quarto.nvcr.ai/api/blogs', {
           credentials: 'omit',
           headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE5NTMwMzYsImlhdCI6MTc1MTc4MDIzNiwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE3ODAyMzZ9XSwic2Vzc2lvbl9pZCI6ImI2ZTkzOTg0LTYwNGEtNGM4ZS05OGRmLWEwMzFkZmU0NGE5YyIsImlzX2Fub255bW91cyI6ZmFsc2V9.0wusGq1_QaFdtuLhPrOOnpYNgtdCZToaEZIROhnP3zI",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
             "X-Session-Id": "2676be630e97cc10"
           },
         });
@@ -181,6 +181,7 @@ export default function Home() {
     const apiPayload = {
       inputs: {
         topic: data.topic,
+        description: data.description || '',
         word_per_post: data.wordPerPost,
         books_to_promote: data.books_to_promote.map(book => book.value).join('\n'),
         post_type: data.postType,
@@ -198,7 +199,7 @@ export default function Home() {
             credentials: 'omit',
             headers: {
               'Content-Type': 'application/json',
-              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE5NTMwMzYsImlhdCI6MTc1MTc4MDIzNiwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE3ODAyMzZ9XSwic2Vzc2lvbl9pZCI6ImI2ZTkzOTg0LTYwNGEtNGM4ZS05OGRmLWEwMzFkZmU0NGE5YyIsImlzX2Fub255bW91cyI6ZmFsc2V9.0wusGq1_QaFdtuLhPrOOnpYNgtdCZToaEZIROhnP3zI",
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
               "X-Session-Id": "2676be630e97cc10"
             },
         });
@@ -256,7 +257,7 @@ export default function Home() {
           credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTE5NTMwMzYsImlhdCI6MTc1MTc4MDIzNiwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTE3ODAyMzZ9XSwic2Vzc2lvbl9pZCI6ImI2ZTkzOTg0LTYwNGEtNGM4ZS05OGRmLWEwMzFkZmU0NGE5YyIsImlzX2Fub255bW91cyI6ZmFsc2V9.0wusGq1_QaFdtuLhPrOOnpYNgtdCZToaEZIROhnP3zI",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
             "X-Session-Id": "2676be630e97cc10"
           },
       });
@@ -414,6 +415,7 @@ export default function Home() {
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-2 text-sm space-y-3">
+                                    {convo.formValues.description && <p><strong>Description:</strong> {convo.formValues.description}</p>}
                                     <p><strong>Word Count:</strong> {convo.formValues.wordPerPost}</p>
                                     <p><strong>Post Type:</strong> {convo.formValues.postType}</p>
                                     <p><strong>Tone:</strong> {convo.formValues.tone}</p>

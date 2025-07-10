@@ -12,7 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Loader2, Wand2, PlusCircle, Trash2 } from 'lucide-react';
 
 const formSchema = z.object({
-  topic: z.string().min(10, { message: 'Topic must be at least 10 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
+  topic: z.string().min(3, { message: 'Topic must be at least 3 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
+  description: z.string().max(1000, { message: 'Description cannot exceed 1000 characters.' }).optional(),
   wordPerPost: z.string().min(1, { message: "Word count is required." }),
   postType: z.string().min(1, { message: 'Post type is required.' }).max(500, { message: 'Post type cannot exceed 500 characters.' }),
   tone: z.string().min(1, { message: 'Tone is required.' }).max(500, { message: 'Tone cannot exceed 500 characters.' }),
@@ -30,7 +31,8 @@ export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFor
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: 'why math game is important for kid development',
+      topic: 'math book',
+      description: 'why math game is important for kid development',
       wordPerPost: '500-1000',
       postType: 'Can be listicles, roundups, curated content, article/research recommendations and how-to guides.',
       tone: 'A conversational and semi-professional tone that engages with the reader on a personal level.',
@@ -67,12 +69,36 @@ export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFor
                   <FormControl>
                     <Input
                       id="topic"
-                      placeholder="e.g., 'The importance of creative play for child development'"
+                      placeholder="e.g., 'The importance of creative play'"
                       {...field}
                       className="text-base focus:ring-accent focus:border-accent"
                       disabled={isGenerating}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor="description" className="text-base font-medium">Description (Optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="description"
+                      placeholder="Provide more details about the topic..."
+                      {...field}
+                      rows={3}
+                      className="text-base focus:ring-accent focus:border-accent"
+                      disabled={isGenerating}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    A more detailed description to guide the AI in generating the post.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
