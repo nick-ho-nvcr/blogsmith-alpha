@@ -11,7 +11,7 @@ import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Info, Lightbulb, Expand, Wand2 } from 'lucide-react';
+import { Loader2, Trash2, Info, Lightbulb, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +34,7 @@ interface ApiSource {
 }
 
 // Helper to create a summary from the content
-const createSummary = (htmlContent: string, wordLimit: number = 20): string => {
+const createSummary = (htmlContent: string, wordLimit: number = 10): string => {
   if (!htmlContent) return 'New Idea';
   const textContent = htmlContent.replace(/<[^>]*>/g, ' '); // Strip HTML tags
   const words = textContent.trim().split(/\s+/);
@@ -301,7 +301,7 @@ export default function Home() {
 
     const newConversation: Conversation = {
       id: tempId,
-      topic: formValues.topic,
+      topic: createSummary(idea.content, 10),
       messages: [{ role: 'assistant', content: '' }],
       isGenerating: true,
       formValues: formValues,
@@ -323,7 +323,7 @@ export default function Home() {
         post_type: formValues.postType,
         tone: formValues.tone,
         references: references,
-        idea: ideaContent, // Pass the idea content
+        blog_idea: ideaContent, // Pass the idea content
       },
       query: 'start',
       conversation_id: '',
@@ -351,6 +351,7 @@ export default function Home() {
         }
 
         let fullContent = '';
+        let finalConversationId = '';
         await processStream(response.body.getReader(), (parsed) => {
           if (parsed.event === 'message' && parsed.message) {
               fullContent += parsed.message;
@@ -363,13 +364,23 @@ export default function Home() {
                   return c;
               }));
           } else if (parsed.event === 'message_end' && parsed.conversation_id) {
+            finalConversationId = parsed.conversation_id;
             setConversations(prev => prev.map(c => 
                 c.id === tempId ? { ...c, id: parsed.conversation_id, isGenerating: false } : c
             ));
             setActiveAccordionItem(parsed.conversation_id);
+            setGeneratedIdeas(prev => prev.map(i => i.id === idea.id ? { ...i, conversationId: parsed.conversation_id, isGeneratingPost: false } : i));
             toast({ title: 'Blog Post Generated!', description: 'Your new blog post is ready. You can ask for edits below.' });
           }
         });
+        
+         if (finalConversationId) {
+            const element = document.getElementById(`conversation-section`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
     } catch (error: any) {
         setConversations(prev => prev.filter(c => c.id !== tempId));
         toast({ variant: 'destructive', title: 'Generation Failed', description: error.message });
@@ -453,6 +464,8 @@ export default function Home() {
 
   const handleDeleteConversation = (id: string) => {
     setConversations(prev => prev.filter(c => c.id !== id));
+    // Also reset the idea that was linked to this conversation
+    setGeneratedIdeas(prev => prev.map(idea => idea.conversationId === id ? {...idea, conversationId: undefined} : idea));
     if (activeAccordionItem === id) {
       setActiveAccordionItem(undefined);
     }
@@ -463,6 +476,17 @@ export default function Home() {
     setGeneratedIdeas(prev => prev.filter(idea => idea.id !== id));
     toast({ title: "Idea Removed" });
   };
+  
+  const handleViewContent = (conversationId?: string) => {
+    if (conversationId) {
+      setActiveAccordionItem(conversationId);
+      const element = document.getElementById(`conversation-section`);
+      if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  };
+
 
   const handleSelectSource = (id: string, selected: boolean) => {
     setSelectedSourceIds((prev) =>
@@ -586,23 +610,30 @@ export default function Home() {
                                    </AccordionContent>
                                  </AccordionItem>
                                </Accordion>
-                                <Button
-                                  onClick={() => handleGeneratePostFromIdea(idea)}
-                                  disabled={isGenerating}
-                                  className="w-full bg-accent hover:bg-accent/90 mt-2"
-                                >
-                                  {idea.isGeneratingPost ? (
-                                    <>
-                                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                      Generating Post...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Wand2 className="mr-2 h-5 w-5" />
-                                      Generate Post
-                                    </>
-                                  )}
-                                </Button>
+                                {idea.conversationId ? (
+                                    <Button onClick={() => handleViewContent(idea.conversationId)} className="w-full bg-primary hover:bg-primary/90 mt-2">
+                                        <LinkIcon className="mr-2 h-5 w-5" />
+                                        View Content
+                                    </Button>
+                                ) : (
+                                  <Button
+                                    onClick={() => handleGeneratePostFromIdea(idea)}
+                                    disabled={isGeneratingIdeas || idea.isGeneratingPost}
+                                    className="w-full bg-accent hover:bg-accent/90 mt-2"
+                                  >
+                                    {idea.isGeneratingPost ? (
+                                      <>
+                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        Generating...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Wand2 className="mr-2 h-5 w-5" />
+                                        Generate Post
+                                      </>
+                                    )}
+                                  </Button>
+                                )}
                              </CardFooter>
                             </>
                           )}
@@ -627,7 +658,7 @@ export default function Home() {
             )}
 
             {conversations.length > 0 && (
-              <div className="space-y-8 mt-12">
+              <div className="space-y-8 mt-12 scroll-mt-20" id="conversation-section">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Content</h2>
                 <Accordion 
                   type="single" 

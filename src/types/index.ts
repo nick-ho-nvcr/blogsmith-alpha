@@ -32,4 +32,5 @@ export interface GeneratedIdea {
     selectedSources: Source[];
     isLoading?: boolean;
     isGeneratingPost?: boolean;
+    conversationId?: string;
 }
