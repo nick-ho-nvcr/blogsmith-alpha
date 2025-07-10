@@ -2,16 +2,16 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import type { Source, Message, Conversation, StoredConversation } from '@/types';
+import type { Source, Message, Conversation, StoredConversation, GeneratedIdea, FormValues } from '@/types';
 import { BlogReferences } from '@/components/blog-references';
-import { BlogGenerationForm, type FormValues } from '@/components/blog-generation-form';
+import { BlogGenerationForm } from '@/components/blog-generation-form';
 import { ChatInterface } from '@/components/chat-interface';
 import { AppHeader } from '@/components/app-header';
 import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Info } from 'lucide-react';
+import { Loader2, Trash2, Info, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +35,7 @@ export default function Home() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>();
   const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
+  const [generatedIdeas, setGeneratedIdeas] = useState<GeneratedIdea[]>([]);
 
   useEffect(() => {
     try {
@@ -43,9 +44,14 @@ export default function Home() {
             const storedConversations: StoredConversation[] = JSON.parse(stored);
             setConversations(storedConversations.map(c => ({...c, isGenerating: false})));
         }
+        const storedIdeas = sessionStorage.getItem('generatedIdeas');
+        if (storedIdeas) {
+            setGeneratedIdeas(JSON.parse(storedIdeas));
+        }
     } catch (error) {
-        console.error("Failed to load conversations from session storage", error);
+        console.error("Failed to load data from session storage", error);
         sessionStorage.removeItem('conversations');
+        sessionStorage.removeItem('generatedIdeas');
     }
   }, []);
 
@@ -57,10 +63,15 @@ export default function Home() {
           } else {
               sessionStorage.removeItem('conversations');
           }
+          if (generatedIdeas.length > 0) {
+            sessionStorage.setItem('generatedIdeas', JSON.stringify(generatedIdeas));
+          } else {
+              sessionStorage.removeItem('generatedIdeas');
+          }
       } catch (error) {
-          console.error("Failed to save conversations to session storage", error);
+          console.error("Failed to save data to session storage", error);
       }
-  }, [conversations]);
+  }, [conversations, generatedIdeas]);
 
 
   useEffect(() => {
@@ -201,23 +212,18 @@ export default function Home() {
       const responseText = await response.text();
       const ideas = responseText.split('---- idea ----').map(idea => idea.trim()).filter(idea => idea);
 
-      const newConversations: Conversation[] = ideas.map((ideaContent, index) => {
+      const newIdeas: GeneratedIdea[] = ideas.map((ideaContent, index) => {
         const tempId = `temp-idea-${Date.now()}-${index}`;
         return {
           id: tempId,
-          topic: `Idea ${conversations.length + index + 1}: ${data.topic}`,
-          messages: [{ role: 'assistant', content: `---- Idea ----\n${ideaContent}` }],
-          isGenerating: false,
+          content: `---- Idea ----\n${ideaContent}`,
           formValues: data,
           selectedSources: selectedSourcesForPost,
         };
       });
 
-      setConversations(prev => [...newConversations, ...prev]);
-      if (newConversations.length > 0) {
-        setActiveAccordionItem(newConversations[0].id);
-      }
-      toast({ title: 'Ideas Generated!', description: `We've created ${newConversations.length} new ideas for you.` });
+      setGeneratedIdeas(prev => [...newIdeas, ...prev]);
+      toast({ title: 'Ideas Generated!', description: `We've created ${newIdeas.length} new ideas for you.` });
 
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Idea Generation Failed', description: error.message });
@@ -387,6 +393,11 @@ export default function Home() {
     toast({ title: "Conversation Removed" });
   };
   
+  const handleDeleteIdea = (id: string) => {
+    setGeneratedIdeas(prev => prev.filter(idea => idea.id !== id));
+    toast({ title: "Idea Removed" });
+  };
+
   const handleSelectSource = (id: string, selected: boolean) => {
     setSelectedSourceIds((prev) =>
       selected ? [...prev, id] : prev.filter((sourceId) => sourceId !== id)
@@ -402,7 +413,8 @@ export default function Home() {
   };
 
   const areAllSourcesSelected = sources.length > 0 && selectedSourceIds.length === sources.length;
-  const isGenerating = conversations.some(c => c.isGenerating);
+  const isGeneratingPost = conversations.some(c => c.isGenerating);
+  const isGenerating = isGeneratingPost || isGeneratingIdeas;
 
   if (isLoadingSources) {
     return (
@@ -435,14 +447,76 @@ export default function Home() {
               <BlogGenerationForm
                 onGeneratePost={handleGeneratePost}
                 onGenerateIdeas={handleGenerateIdeas}
-                isGeneratingPost={isGenerating}
+                isGeneratingPost={isGeneratingPost}
                 isGeneratingIdeas={isGeneratingIdeas}
               />
             </div>
 
-            {conversations.length > 0 && (
+            {generatedIdeas.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {generatedIdeas.map(idea => (
+                     <Card key={idea.id} className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col">
+                       <CardHeader>
+                         <div className="flex justify-between items-start">
+                           <CardTitle className="font-headline text-xl flex items-center gap-2">
+                             <Lightbulb className="h-5 w-5 text-primary" />
+                             Blog Post Idea
+                           </CardTitle>
+                           <Button
+                             variant="ghost"
+                             size="icon"
+                             onClick={() => handleDeleteIdea(idea.id)}
+                             aria-label="Delete idea"
+                           >
+                             <Trash2 className="h-5 w-5 text-destructive" />
+                           </Button>
+                         </div>
+                       </CardHeader>
+                       <CardContent className="flex-grow">
+                          <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: idea.content.replace('---- Idea ----', '') }} />
+                       </CardContent>
+                       <CardFooter>
+                         <Accordion type="single" collapsible className="w-full">
+                           <AccordionItem value="details" className="border-none">
+                             <AccordionTrigger className="text-sm p-2 hover:no-underline">View Generation Details</AccordionTrigger>
+                             <AccordionContent>
+                               <Card className="p-4 border-dashed bg-muted/30">
+                                   <CardContent className="p-2 text-sm space-y-3">
+                                       {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
+                                       <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
+                                       <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
+                                       <p><strong>Tone:</strong> {idea.formValues.tone}</p>
+                                       <div>
+                                           <strong>Books to Promote:</strong>
+                                           <ul className="list-disc list-inside">
+                                               {idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                           </ul>
+                                       </div>
+                                       <div>
+                                           <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
+                                           <div className="flex flex-wrap gap-2">
+                                           {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
+                                               <Badge key={source.id} variant="secondary">{source.title}</Badge>
+                                           )) : <p className="text-muted-foreground">No sources were selected.</p>}
+                                           </div>
+                                       </div>
+                                   </CardContent>
+                               </Card>
+                             </AccordionContent>
+                           </AccordionItem>
+                         </Accordion>
+                       </CardFooter>
+                     </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {conversations.length > 0 && (
+              <div className="space-y-8 mt-12">
+                <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Content</h2>
                 <Accordion 
                   type="single" 
                   collapsible 
@@ -453,9 +527,9 @@ export default function Home() {
                   {conversations.map(convo => (
                     <AccordionItem value={convo.id} key={convo.id} className="border-none">
                       <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full">
-                        <div className="flex w-full items-center">
+                        <AccordionHeader className="flex w-full items-center p-0">
                           <AccordionTrigger className="flex-1 p-6 text-left">
-                              <CardTitle className="font-headline text-2xl">{convo.topic}</CardTitle>
+                              <CardTitle className="font-headline text-2xl -webkit-fill-available">{convo.topic}</CardTitle>
                           </AccordionTrigger>
                           <div className="pr-4">
                               <Button
@@ -470,7 +544,7 @@ export default function Home() {
                                   <Trash2 className="h-5 w-5 text-destructive" />
                               </Button>
                           </div>
-                        </div>
+                        </AccordionHeader>
                         <AccordionContent>
                           <CardContent>
                             {convo.formValues && convo.selectedSources && (
@@ -481,7 +555,7 @@ export default function Home() {
                                         Generation Details
                                     </CardTitle>
                                     <CardDescription>
-                                        This idea was generated using the following settings and sources.
+                                        This content was generated using the following settings and sources.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-2 text-sm space-y-3">

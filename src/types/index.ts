@@ -24,3 +24,12 @@ export interface Conversation {
 }
 
 export type StoredConversation = Omit<Conversation, 'isGenerating'>;
+
+export interface GeneratedIdea {
+    id: string;
+    content: string;
+    formValues: FormValues;
+    selectedSources: Source[];
+}
+
+    
