@@ -556,24 +556,7 @@ export default function Home() {
                                     </div>
                                   </div>
                               </DialogTrigger>
-                             <CardFooter className="flex-col items-start gap-4">
-                                <Button
-                                  onClick={() => handleGeneratePostFromIdea(idea)}
-                                  disabled={isGenerating}
-                                  className="w-full bg-accent hover:bg-accent/90"
-                                >
-                                  {idea.isGeneratingPost ? (
-                                    <>
-                                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                      Generating Post...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Wand2 className="mr-2 h-5 w-5" />
-                                      Generate Post from this Idea
-                                    </>
-                                  )}
-                                </Button>
+                             <CardFooter className="flex-col items-start gap-4 mt-auto p-4 border-t bg-card">
                                <Accordion type="single" collapsible className="w-full">
                                  <AccordionItem value="details" className="border-none">
                                    <AccordionTrigger className="text-sm p-2 hover:no-underline">View Generation Details</AccordionTrigger>
@@ -603,6 +586,23 @@ export default function Home() {
                                    </AccordionContent>
                                  </AccordionItem>
                                </Accordion>
+                                <Button
+                                  onClick={() => handleGeneratePostFromIdea(idea)}
+                                  disabled={isGenerating}
+                                  className="w-full bg-accent hover:bg-accent/90 mt-2"
+                                >
+                                  {idea.isGeneratingPost ? (
+                                    <>
+                                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                      Generating Post...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Wand2 className="mr-2 h-5 w-5" />
+                                      Generate Post
+                                    </>
+                                  )}
+                                </Button>
                              </CardFooter>
                             </>
                           )}
@@ -714,3 +714,5 @@ export default function Home() {
     </Suspense>
   );
 }
+
+    
