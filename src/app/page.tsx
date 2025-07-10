@@ -255,21 +255,32 @@ export default function Home() {
         }
       });
       
-      const ideas = fullContent.split('---- idea ----')
+      const ideas = fullContent.split(/----\s*idea\s*----/i)
         .map(idea => idea.trim())
         .filter(idea => idea);
 
       const newIdeas: GeneratedIdea[] = ideas.map((ideaContent, index) => {
-        const tempId = `temp-idea-${Date.now()}-${index}`;
         return {
-          id: tempId,
+          id: `temp-idea-${Date.now()}-${index}`,
           content: ideaContent,
           formValues: data,
           selectedSources: selectedSourcesForPost,
         };
       });
 
-      setGeneratedIdeas(prev => [...newIdeas, ...prev.filter(idea => idea.isLoading)]);
+      setGeneratedIdeas(prev => {
+          const updatedIdeas = [...prev];
+          let newIdeaIndex = 0;
+          for (let i = 0; i < updatedIdeas.length; i++) {
+              if (updatedIdeas[i].isLoading && newIdeaIndex < newIdeas.length) {
+                  // Replace placeholder with new idea, keeping original placeholder ID for key stability
+                  updatedIdeas[i] = { ...newIdeas[newIdeaIndex], id: updatedIdeas[i].id, isLoading: false };
+                  newIdeaIndex++;
+              }
+          }
+           // Filter out any remaining placeholders if API returns fewer ideas than placeholders
+          return updatedIdeas.filter(idea => !idea.isLoading || newIdeas.find(ni => ni.id === idea.id));
+      });
       toast({ title: 'Ideas Generated!', description: `We've created ${newIdeas.length} new ideas for you.` });
 
     } catch (error: any) {
