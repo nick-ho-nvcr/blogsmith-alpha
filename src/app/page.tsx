@@ -34,6 +34,7 @@ export default function Home() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [authError, setAuthError] = useState<string | null>(null);
   const [activeAccordionItem, setActiveAccordionItem] = useState<string | undefined>();
+  const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
 
   useEffect(() => {
     try {
@@ -158,6 +159,72 @@ export default function Home() {
         }
     }
   };
+
+  const handleGenerateIdeas = async (data: FormValues) => {
+    setIsGeneratingIdeas(true);
+    const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
+
+    const references = selectedSourcesForPost
+      .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
+      .join('\n\n');
+    
+    const apiPayload = {
+      inputs: {
+        topic: data.topic,
+        description: data.description || '',
+        word_per_post: data.wordPerPost,
+        books_to_promote: data.books_to_promote.map(book => book.value).join('\n'),
+        post_type: data.postType,
+        tone: data.tone,
+        references: references,
+      },
+    };
+
+    try {
+      const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/ideas/create', {
+        method: 'POST',
+        body: JSON.stringify(apiPayload),
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
+          "X-Session-Id": "2676be630e97cc10"
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+
+      const responseText = await response.text();
+      const ideas = responseText.split('---- idea ----').map(idea => idea.trim()).filter(idea => idea);
+
+      const newConversations: Conversation[] = ideas.map((ideaContent, index) => {
+        const tempId = `temp-idea-${Date.now()}-${index}`;
+        return {
+          id: tempId,
+          topic: `Idea ${conversations.length + index + 1}: ${data.topic}`,
+          messages: [{ role: 'assistant', content: `---- Idea ----\n${ideaContent}` }],
+          isGenerating: false,
+          formValues: data,
+          selectedSources: selectedSourcesForPost,
+        };
+      });
+
+      setConversations(prev => [...newConversations, ...prev]);
+      if (newConversations.length > 0) {
+        setActiveAccordionItem(newConversations[0].id);
+      }
+      toast({ title: 'Ideas Generated!', description: `We've created ${newConversations.length} new ideas for you.` });
+
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Idea Generation Failed', description: error.message });
+    } finally {
+      setIsGeneratingIdeas(false);
+    }
+  };
+
 
   const handleGeneratePost = async (data: FormValues) => {
     const tempId = `temp-${Date.now()}`;
@@ -365,8 +432,10 @@ export default function Home() {
 
             <div id="blog-generation-form" className="scroll-mt-20">
               <BlogGenerationForm
-                onSubmit={handleGeneratePost}
-                isGenerating={isGenerating}
+                onGeneratePost={handleGeneratePost}
+                onGenerateIdeas={handleGenerateIdeas}
+                isGeneratingPost={isGenerating}
+                isGeneratingIdeas={isGeneratingIdeas}
               />
             </div>
 
@@ -458,3 +527,5 @@ export default function Home() {
     </Suspense>
   );
 }
+
+    

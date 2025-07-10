@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Wand2, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, Wand2, PlusCircle, Trash2, Zap } from 'lucide-react';
 
 const formSchema = z.object({
   topic: z.string().min(3, { message: 'Topic must be at least 3 characters.' }).max(200, { message: 'Topic cannot exceed 200 characters.' }),
@@ -23,11 +23,13 @@ const formSchema = z.object({
 export type FormValues = z.infer<typeof formSchema>;
 
 interface BlogGenerationFormProps {
-  onSubmit: (data: FormValues) => Promise<void>;
-  isGenerating: boolean;
+  onGeneratePost: (data: FormValues) => Promise<void>;
+  onGenerateIdeas: (data: FormValues) => Promise<void>;
+  isGeneratingPost: boolean;
+  isGeneratingIdeas: boolean;
 }
 
-export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFormProps) {
+export function BlogGenerationForm({ onGeneratePost, onGenerateIdeas, isGeneratingPost, isGeneratingIdeas }: BlogGenerationFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,9 +47,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFor
     name: "books_to_promote"
   });
 
-  async function handleSubmit(values: FormValues) {
-    await onSubmit(values);
-  }
+  const isGenerating = isGeneratingPost || isGeneratingIdeas;
 
   return (
     <Card className="shadow-lg rounded-xl overflow-hidden">
@@ -59,7 +59,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFor
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onGeneratePost)} className="space-y-6">
             <FormField
               control={form.control}
               name="topic"
@@ -69,7 +69,7 @@ export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFor
                   <FormControl>
                     <Input
                       id="topic"
-                      placeholder="e.g., 'The importance of creative play'"
+                      placeholder="e.g., 'Math and Child development'"
                       {...field}
                       className="text-base focus:ring-accent focus:border-accent"
                       disabled={isGenerating}
@@ -229,27 +229,50 @@ export function BlogGenerationForm({ onSubmit, isGenerating }: BlogGenerationFor
               )}
             </div>
             
-            <Button 
-              type="submit" 
-              disabled={isGenerating} 
-              className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-              title="Generate Next Blog Post"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="mr-2 h-5 w-5" />
-                  Generate Next Blog Post
-                </>
-              )}
-            </Button>
+            <div className="flex flex-wrap gap-4">
+              <Button 
+                type="button"
+                onClick={form.handleSubmit(onGenerateIdeas)}
+                disabled={isGenerating} 
+                className="bg-primary/90 hover:bg-primary text-primary-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                title="Generate 3 blog post ideas"
+              >
+                {isGeneratingIdeas ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Generating Ideas...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="mr-2 h-5 w-5" />
+                    Generate Ideas
+                  </>
+                )}
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isGenerating} 
+                className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground text-lg py-6 px-8 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                title="Generate Next Blog Post"
+              >
+                {isGeneratingPost ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-5 w-5" />
+                    Generate Next Blog Post
+                  </>
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
     </Card>
   );
 }
+
+    
