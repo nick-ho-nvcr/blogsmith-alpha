@@ -30,6 +30,5 @@ export interface GeneratedIdea {
     content: string;
     formValues: FormValues;
     selectedSources: Source[];
+    isLoading?: boolean;
 }
-
-    

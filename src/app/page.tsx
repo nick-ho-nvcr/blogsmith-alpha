@@ -35,6 +35,7 @@ interface ApiSource {
 
 // Helper to create a summary from the content
 const createSummary = (htmlContent: string, wordLimit: number = 20): string => {
+  if (!htmlContent) return 'New Idea';
   const textContent = htmlContent.replace(/<[^>]*>/g, ' '); // Strip HTML tags
   const words = textContent.trim().split(/\s+/);
   if (words.length > wordLimit) {
@@ -83,7 +84,12 @@ export default function Home() {
               sessionStorage.removeItem('conversations');
           }
           if (generatedIdeas.length > 0) {
-            sessionStorage.setItem('generatedIdeas', JSON.stringify(generatedIdeas));
+            const ideasToStore = generatedIdeas.filter(idea => !idea.isLoading);
+            if (ideasToStore.length > 0) {
+              sessionStorage.setItem('generatedIdeas', JSON.stringify(ideasToStore));
+            } else {
+              sessionStorage.removeItem('generatedIdeas');
+            }
           } else {
               sessionStorage.removeItem('generatedIdeas');
           }
@@ -193,6 +199,16 @@ export default function Home() {
   const handleGenerateIdeas = async (data: FormValues) => {
     setIsGeneratingIdeas(true);
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
+    
+    // Create placeholder ideas
+    const placeholderIdeas: GeneratedIdea[] = Array.from({ length: 3 }, (_, i) => ({
+      id: `placeholder-${Date.now()}-${i}`,
+      content: '',
+      formValues: data,
+      selectedSources: selectedSourcesForPost,
+      isLoading: true,
+    }));
+    setGeneratedIdeas(prev => [...placeholderIdeas, ...prev.filter(idea => !idea.isLoading)]);
 
     const references = selectedSourcesForPost
       .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
@@ -239,7 +255,9 @@ export default function Home() {
         }
       });
       
-      const ideas = fullContent.split('---- idea ----').map(idea => idea.trim()).filter(idea => idea);
+      const ideas = fullContent.split('---- idea ----')
+        .map(idea => idea.trim())
+        .filter(idea => idea);
 
       const newIdeas: GeneratedIdea[] = ideas.map((ideaContent, index) => {
         const tempId = `temp-idea-${Date.now()}-${index}`;
@@ -251,11 +269,12 @@ export default function Home() {
         };
       });
 
-      setGeneratedIdeas(prev => [...newIdeas, ...prev]);
+      setGeneratedIdeas(prev => [...newIdeas, ...prev.filter(idea => idea.isLoading)]);
       toast({ title: 'Ideas Generated!', description: `We've created ${newIdeas.length} new ideas for you.` });
 
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Idea Generation Failed', description: error.message });
+      setGeneratedIdeas(prev => prev.filter(idea => !idea.isLoading)); // remove placeholders on error
     } finally {
       setIsGeneratingIdeas(false);
     }
@@ -488,78 +507,90 @@ export default function Home() {
                   {generatedIdeas.map(idea => (
                      <Dialog key={idea.id}>
                         <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col">
-                            <DialogTrigger asChild>
-                                <div className="cursor-pointer hover:bg-primary/5 transition-colors w-full h-full">
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start">
-                                        <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                            <Lightbulb className="h-5 w-5 text-primary" />
-                                            <p>{createSummary(idea.content)}</p>
-                                        </CardTitle>
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
-                                                <Expand className="h-4 w-4" />
-                                                <span className="sr-only">Enlarge Idea</span>
-                                            </div>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={(e) => { e.stopPropagation(); handleDeleteIdea(idea.id); }}
-                                                aria-label="Delete idea"
-                                            >
-                                                <Trash2 className="h-5 w-5 text-destructive" />
-                                            </Button>
-                                        </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="flex-grow">
-                                        <div className="prose prose-sm max-w-none dark:prose-invert line-clamp-3" dangerouslySetInnerHTML={{ __html: idea.content }} />
-                                    </CardContent>
-                                </div>
-                            </DialogTrigger>
-                           <CardFooter>
-                             <Accordion type="single" collapsible className="w-full">
-                               <AccordionItem value="details" className="border-none">
-                                 <AccordionTrigger className="text-sm p-2 hover:no-underline">View Generation Details</AccordionTrigger>
-                                 <AccordionContent>
-                                   <Card className="p-4 border-dashed bg-muted/30">
-                                       <CardContent className="p-2 text-sm space-y-3">
-                                           {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
-                                           <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
-                                           <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
-                                           <p><strong>Tone:</strong> {idea.formValues.tone}</p>
-                                           <div>
-                                               <strong>Books to Promote:</strong>
-                                               <ul className="list-disc list-inside">
-                                                   {idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
-                                               </ul>
-                                           </div>
-                                           <div>
-                                               <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
-                                               <div className="flex flex-wrap gap-2">
-                                               {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
-                                                   <Badge key={source.id} variant="secondary">{source.title}</Badge>
-                                               )) : <p className="text-muted-foreground">No sources were selected.</p>}
-                                               </div>
-                                           </div>
-                                       </CardContent>
-                                   </Card>
-                                 </AccordionContent>
-                               </AccordionItem>
-                             </Accordion>
-                           </CardFooter>
+                          {idea.isLoading ? (
+                            <div className="p-6 space-y-4">
+                              <Skeleton className="h-6 w-3/4" />
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-2/3" />
+                            </div>
+                          ) : (
+                            <>
+                              <DialogTrigger asChild>
+                                  <div className="cursor-pointer hover:bg-primary/5 transition-colors w-full h-full">
+                                      <CardHeader>
+                                          <div className="flex justify-between items-start">
+                                          <CardTitle className="font-headline text-xl flex items-center gap-2">
+                                              <Lightbulb className="h-5 w-5 text-primary" />
+                                              <p>{createSummary(idea.content, 50)}</p>
+                                          </CardTitle>
+                                          <div className="flex items-center gap-2">
+                                              <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
+                                                  <Expand className="h-4 w-4" />
+                                                  <span className="sr-only">Enlarge Idea</span>
+                                              </div>
+                                              <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  onClick={(e) => { e.stopPropagation(); handleDeleteIdea(idea.id); }}
+                                                  aria-label="Delete idea"
+                                              >
+                                                  <Trash2 className="h-5 w-5 text-destructive" />
+                                              </Button>
+                                          </div>
+                                          </div>
+                                      </CardHeader>
+                                      <CardContent className="flex-grow">
+                                          <div className="prose prose-sm max-w-none dark:prose-invert line-clamp-3" dangerouslySetInnerHTML={{ __html: idea.content }} />
+                                      </CardContent>
+                                  </div>
+                              </DialogTrigger>
+                             <CardFooter>
+                               <Accordion type="single" collapsible className="w-full">
+                                 <AccordionItem value="details" className="border-none">
+                                   <AccordionTrigger className="text-sm p-2 hover:no-underline">View Generation Details</AccordionTrigger>
+                                   <AccordionContent>
+                                     <Card className="p-4 border-dashed bg-muted/30">
+                                         <CardContent className="p-2 text-sm space-y-3">
+                                             {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
+                                             <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
+                                             <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
+                                             <p><strong>Tone:</strong> {idea.formValues.tone}</p>
+                                             <div>
+                                                 <strong>Books to Promote:</strong>
+                                                 <ul className="list-disc list-inside">
+                                                     {idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                                 </ul>
+                                             </div>
+                                             <div>
+                                                 <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
+                                                 <div className="flex flex-wrap gap-2">
+                                                 {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
+                                                     <Badge key={source.id} variant="secondary">{source.title}</Badge>
+                                                 )) : <p className="text-muted-foreground">No sources were selected.</p>}
+                                                 </div>
+                                             </div>
+                                         </CardContent>
+                                     </Card>
+                                   </AccordionContent>
+                                 </AccordionItem>
+                               </Accordion>
+                             </CardFooter>
+                            </>
+                          )}
                         </Card>
-                        <DialogContent className="sm:max-w-5xl">
-                            <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
-                                <Lightbulb className="h-6 w-6 text-primary" />
-                                Blog Post Idea
-                            </DialogTitle>
-                            </DialogHeader>
-                            <ScrollArea className="max-h-[70vh] pr-6">
-                            <div className="text-foreground/90 prose max-w-none dark:prose-invert py-4" dangerouslySetInnerHTML={{ __html: idea.content }} />
-                            </ScrollArea>
-                        </DialogContent>
+                        {!idea.isLoading && (
+                          <DialogContent className="sm:max-w-5xl">
+                              <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
+                                  <Lightbulb className="h-6 w-6 text-primary" />
+                                  Blog Post Idea
+                              </DialogTitle>
+                              </DialogHeader>
+                              <ScrollArea className="max-h-[70vh] pr-6">
+                              <div className="text-foreground/90 prose max-w-none dark:prose-invert py-4" dangerouslySetInnerHTML={{ __html: idea.content }} />
+                              </ScrollArea>
+                          </DialogContent>
+                        )}
                     </Dialog>
                   ))}
                 </div>
@@ -654,5 +685,3 @@ export default function Home() {
     </Suspense>
   );
 }
-
-    
