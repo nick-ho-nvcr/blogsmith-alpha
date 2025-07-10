@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -581,35 +582,45 @@ export default function Home() {
                                   </div>
                               </DialogTrigger>
                              <CardFooter className="flex-col items-start gap-4 mt-auto p-4 border-t bg-card">
-                               <Accordion type="single" collapsible className="w-full">
-                                 <AccordionItem value="details" className="border-none">
-                                   <AccordionTrigger className="text-sm p-2 hover:no-underline">View Generation Details</AccordionTrigger>
-                                   <AccordionContent>
-                                     <Card className="p-4 border-dashed bg-muted/30">
-                                         <CardContent className="p-2 text-sm space-y-3">
-                                             {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
-                                             <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
-                                             <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
-                                             <p><strong>Tone:</strong> {idea.formValues.tone}</p>
-                                             <div>
-                                                 <strong>Books to Promote:</strong>
-                                                 <ul className="list-disc list-inside">
-                                                     {idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
-                                                 </ul>
-                                             </div>
-                                             <div>
-                                                 <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
-                                                 <div className="flex flex-wrap gap-2">
-                                                 {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
-                                                     <Badge key={source.id} variant="secondary">{source.title}</Badge>
-                                                 )) : <p className="text-muted-foreground">No sources were selected.</p>}
-                                                 </div>
-                                             </div>
-                                         </CardContent>
-                                     </Card>
-                                   </AccordionContent>
-                                 </AccordionItem>
-                               </Accordion>
+                               <Dialog>
+                                  <DialogTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+                                      <Info className="h-4 w-4 mr-2" />
+                                      View Generation Details
+                                    </Button>
+                                  </DialogTrigger>
+                                  <DialogContent>
+                                    <DialogHeader>
+                                      <DialogTitle>Generation Details</DialogTitle>
+                                      <DialogDescription>
+                                        These are the settings used to generate this idea.
+                                      </DialogDescription>
+                                    </DialogHeader>
+                                    <Card className="p-4 border-dashed bg-muted/30">
+                                      <CardContent className="p-2 text-sm space-y-3">
+                                        {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
+                                        <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
+                                        <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
+                                        <p><strong>Tone:</strong> {idea.formValues.tone}</p>
+                                        <div>
+                                            <strong>Books to Promote:</strong>
+                                            <ul className="list-disc list-inside">
+                                                {idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
+                                            <div className="flex flex-wrap gap-2">
+                                            {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
+                                                <Badge key={source.id} variant="secondary">{source.title}</Badge>
+                                            )) : <p className="text-muted-foreground">No sources were selected.</p>}
+                                            </div>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  </DialogContent>
+                               </Dialog>
+
                                 {idea.conversationId ? (
                                     <Button onClick={() => handleViewContent(idea.conversationId)} className="w-full bg-primary hover:bg-primary/90 mt-2">
                                         <LinkIcon className="mr-2 h-5 w-5" />
@@ -691,37 +702,42 @@ export default function Home() {
                         <AccordionContent>
                           <CardContent>
                             {convo.formValues && convo.selectedSources && (
-                             <Card className="mb-6 p-4 border-dashed bg-muted/30">
-                                <CardHeader className="p-2">
-                                    <CardTitle className="font-headline text-lg flex items-center gap-2">
-                                        <Info className="h-5 w-5 text-primary" />
-                                        Generation Details
-                                    </CardTitle>
-                                    <CardDescription>
-                                        This content was generated using the following settings and sources.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="p-2 text-sm space-y-3">
-                                    {convo.formValues.description && <p><strong>Description:</strong> {convo.formValues.description}</p>}
-                                    <p><strong>Word Count:</strong> {convo.formValues.wordPerPost}</p>
-                                    <p><strong>Post Type:</strong> {convo.formValues.postType}</p>
-                                    <p><strong>Tone:</strong> {convo.formValues.tone}</p>
-                                    <div>
-                                        <strong>Books to Promote:</strong>
-                                        <ul className="list-disc list-inside">
-                                            {convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
-                                        <div className="flex flex-wrap gap-2">
-                                        {convo.selectedSources.length > 0 ? convo.selectedSources.map(source => (
-                                            <Badge key={source.id} variant="secondary">{source.title}</Badge>
-                                        )) : <p className="text-muted-foreground">No sources were selected.</p>}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                             </Card>
+                             <Accordion type="single" collapsible className="w-full mb-6">
+                               <AccordionItem value="details" className="border-none">
+                                 <Card className="p-4 border-dashed bg-muted/30">
+                                   <AccordionTrigger className="w-full p-0 hover:no-underline">
+                                     <CardHeader className="p-2 w-full">
+                                         <CardTitle className="font-headline text-lg flex items-center gap-2">
+                                             <Info className="h-5 w-5 text-primary" />
+                                             Generation Details
+                                         </CardTitle>
+                                     </CardHeader>
+                                   </AccordionTrigger>
+                                   <AccordionContent>
+                                     <CardContent className="p-2 text-sm space-y-3">
+                                         {convo.formValues.description && <p><strong>Description:</strong> {convo.formValues.description}</p>}
+                                         <p><strong>Word Count:</strong> {convo.formValues.wordPerPost}</p>
+                                         <p><strong>Post Type:</strong> {convo.formValues.postType}</p>
+                                         <p><strong>Tone:</strong> {convo.formValues.tone}</p>
+                                         <div>
+                                             <strong>Books to Promote:</strong>
+                                             <ul className="list-disc list-inside">
+                                                 {convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                             </ul>
+                                         </div>
+                                         <div>
+                                             <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
+                                             <div className="flex flex-wrap gap-2">
+                                             {convo.selectedSources.length > 0 ? convo.selectedSources.map(source => (
+                                                 <Badge key={source.id} variant="secondary">{source.title}</Badge>
+                                             )) : <p className="text-muted-foreground">No sources were selected.</p>}
+                                             </div>
+                                         </div>
+                                     </CardContent>
+                                   </AccordionContent>
+                                 </Card>
+                               </AccordionItem>
+                             </Accordion>
                             )}
                             <ChatInterface 
                               messages={convo.messages} 
@@ -745,5 +761,3 @@ export default function Home() {
     </Suspense>
   );
 }
-
-    
