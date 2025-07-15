@@ -1,5 +1,20 @@
 
-import type { FormValues } from '@/components/blog-generation-form';
+import type { z } from 'zod';
+
+// We can't import the type directly from the form component due to dependency cycles.
+// So, we define a base schema here that can be extended.
+const bookSchema = z.object({ value: z.string() });
+export const baseFormSchema = z.object({
+  topic: z.string(),
+  description: z.string().optional(),
+  wordPerPost: z.string(),
+  postType: z.string(),
+  tone: z.string(),
+  books_to_promote: z.array(bookSchema).optional(),
+});
+
+export type FormValues = z.infer<typeof baseFormSchema>;
+
 
 export interface Source {
   id: string;

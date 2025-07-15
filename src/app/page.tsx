@@ -107,7 +107,7 @@ export default function Home() {
         const response = await fetch('https://quarto.nvcr.ai/api/blogs', {
           credentials: 'omit',
           headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
             "X-Session-Id": "2676be630e97cc10"
           },
         });
@@ -220,7 +220,7 @@ export default function Home() {
         topic: data.topic,
         description: data.description || '',
         word_per_post: data.wordPerPost,
-        books_to_promote: data.books_to_promote.map(book => book.value).join('\n'),
+        books_to_promote: data.books_to_promote?.map(book => book.value).join('\n'),
         post_type: data.postType,
         tone: data.tone,
         references: references,
@@ -235,7 +235,7 @@ export default function Home() {
         credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
           "X-Session-Id": "2676be630e97cc10"
         },
       });
@@ -320,7 +320,7 @@ export default function Home() {
         topic: formValues.topic,
         description: formValues.description || '',
         word_per_post: formValues.wordPerPost,
-        books_to_promote: formValues.books_to_promote.map(book => book.value).join('\n'),
+        books_to_promote: formValues.books_to_promote?.map(book => book.value).join('\n'),
         post_type: formValues.postType,
         tone: formValues.tone,
         references: references,
@@ -337,7 +337,7 @@ export default function Home() {
             credentials: 'omit',
             headers: {
               'Content-Type': 'application/json',
-              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
               "X-Session-Id": "2676be630e97cc10"
             },
         });
@@ -397,19 +397,24 @@ export default function Home() {
         ? { ...c, messages: [...c.messages, { role: 'user', content: message }], isGenerating: true } 
         : c
     ));
+
+    const conversation = conversations.find(c => c.id === conversationId);
+    const idea = generatedIdeas.find(i => i.conversationId === conversationId);
     
     try {
       const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
           method: 'POST',
           body: JSON.stringify({
-              inputs: {},
+              inputs: {
+                blog_idea: idea?.content || '',
+              },
               query: message,
               conversation_id: conversationId,
           }),
           credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTIyOTkyMDgsImlhdCI6MTc1MjEyNjQwOCwiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTIxMjY0MDh9XSwic2Vzc2lvbl9pZCI6ImQzYzJmY2ZiLWUzMzItNDI2Yy05YTAxLTQ2ZGExMDljYzNhZiIsImlzX2Fub255bW91cyI6ZmFsc2V9.osY3sdxx7wMp-W-YIbGDT8fsT0qER-f8Tr07u2NW52w",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
             "X-Session-Id": "2676be630e97cc10"
           },
       });
@@ -590,7 +595,10 @@ export default function Home() {
                                                 <div>
                                                     <strong>Books to Promote:</strong>
                                                     <ul className="list-disc list-inside">
-                                                        {idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                                        {idea.formValues.books_to_promote && idea.formValues.books_to_promote.length > 0 ? 
+                                                            idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
+                                                            <p className="text-muted-foreground">No books were promoted.</p>
+                                                        }
                                                     </ul>
                                                 </div>
                                                 <div>
@@ -707,7 +715,10 @@ export default function Home() {
                                           <div>
                                               <strong>Books to Promote:</strong>
                                               <ul className="list-disc list-inside">
-                                                  {convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>)}
+                                                  {convo.formValues.books_to_promote && convo.formValues.books_to_promote.length > 0 ? 
+                                                      convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
+                                                      <p className="text-muted-foreground">No books were promoted.</p>
+                                                  }
                                               </ul>
                                           </div>
                                           <div>

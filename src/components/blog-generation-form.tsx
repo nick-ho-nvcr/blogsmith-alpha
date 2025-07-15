@@ -17,7 +17,7 @@ const formSchema = z.object({
   wordPerPost: z.string().min(1, { message: "Word count is required." }),
   postType: z.string().min(1, { message: 'Post type is required.' }).max(500, { message: 'Post type cannot exceed 500 characters.' }),
   tone: z.string().min(1, { message: 'Tone is required.' }).max(500, { message: 'Tone cannot exceed 500 characters.' }),
-  books_to_promote: z.array(z.object({ value: z.string().url({ message: 'Please enter a valid URL.' }) })).min(1, { message: 'At least one book to promote is required.' }),
+  books_to_promote: z.array(z.object({ value: z.string().url({ message: 'Please enter a valid URL.' }).or(z.literal('')) })).optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;
@@ -47,6 +47,14 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
 
   const isGenerating = isGeneratingIdeas;
 
+  const handleSubmit = (data: FormValues) => {
+    const finalData = {
+      ...data,
+      books_to_promote: data.books_to_promote?.filter(book => book.value.trim() !== '') || [],
+    };
+    onGenerateIdeas(finalData);
+  }
+
   return (
     <Card className="shadow-lg rounded-xl overflow-hidden">
       <CardHeader>
@@ -57,7 +65,7 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onGenerateIdeas)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="topic"
@@ -174,7 +182,7 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
             />
 
             <div className="space-y-4">
-              <FormLabel className="text-base font-medium">Books to Promote</FormLabel>
+              <FormLabel className="text-base font-medium">Books to Promote (Optional)</FormLabel>
               <FormDescription>Add one or more book URLs to promote in the post.</FormDescription>
               {fields.map((field, index) => (
                 <FormField
@@ -198,7 +206,7 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
                           size="icon"
                           className="text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
                           onClick={() => remove(index)}
-                          disabled={fields.length <= 1 || isGenerating}
+                          disabled={isGenerating}
                           aria-label="Remove book URL"
                         >
                           <Trash2 className="h-4 w-4" />
