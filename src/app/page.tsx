@@ -15,6 +15,7 @@ import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon }
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -561,72 +562,77 @@ export default function Home() {
                             </div>
                           ) : (
                             <>
-                              <DialogTrigger asChild>
-                                  <div className="cursor-pointer w-full h-full p-6">
-                                    <div className="flex justify-between items-start">
-                                    <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                        <Lightbulb className="h-5 w-5 text-primary" />
-                                        <p>{createSummary(idea.content, 10)}</p>
-                                    </CardTitle>
-                                    <div className="flex items-center gap-2 -mt-2 -mr-2">
-                                        <div className="h-6 w-6 flex items-center justify-center text-muted-foreground">
-                                            <Expand className="h-4 w-4" />
-                                            <span className="sr-only">Enlarge Idea</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <DialogTrigger asChild>
+                                        <div className="cursor-pointer w-full h-full p-6">
+                                          <div className="flex justify-between items-start">
+                                          <CardTitle className="font-headline text-xl flex items-center gap-2">
+                                              <Lightbulb className="h-5 w-5 text-primary" />
+                                              <p>{createSummary(idea.content, 10)}</p>
+                                          </CardTitle>
+                                          <div className="flex items-center gap-2 -mt-2 -mr-2">
+                                              <Dialog>
+                                                <DialogTrigger asChild>
+                                                   <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
+                                                      <Settings className="h-5 w-5 text-muted-foreground" />
+                                                   </Button>
+                                                </DialogTrigger>
+                                                <DialogContent>
+                                                  <DialogHeader>
+                                                    <DialogTitle>Generation Details</DialogTitle>
+                                                    <DialogDescription>
+                                                      These are the settings used to generate this idea.
+                                                    </DialogDescription>
+                                                  </DialogHeader>
+                                                  <Card className="p-4 border-dashed bg-muted/30">
+                                                    <CardContent className="p-2 text-sm space-y-3">
+                                                      <p><strong>Topic:</strong> {idea.formValues.topic}</p>
+                                                      {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
+                                                      <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
+                                                      <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
+                                                      <p><strong>Tone:</strong> {idea.formValues.tone}</p>
+                                                      <div>
+                                                          <strong>Books to Promote:</strong>
+                                                          <ul className="list-disc list-inside">
+                                                              {idea.formValues.books_to_promote && idea.formValues.books_to_promote.length > 0 ? 
+                                                                  idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
+                                                                  <p className="text-muted-foreground">No books were promoted.</p>
+                                                              }
+                                                          </ul>
+                                                      </div>
+                                                      <div>
+                                                          <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
+                                                          <div className="flex flex-wrap gap-2">
+                                                          {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
+                                                              <Badge key={source.id} variant="secondary">{source.title}</Badge>
+                                                          )) : <p className="text-muted-foreground">No sources were selected.</p>}
+                                                          </div>
+                                                      </div>
+                                                    </CardContent>
+                                                  </Card>
+                                                </DialogContent>
+                                             </Dialog>
+                                              <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  onClick={(e) => { e.stopPropagation(); handleDeleteIdea(idea.id); }}
+                                                  aria-label="Delete idea"
+                                                  disabled={idea.isGeneratingPost}
+                                              >
+                                                  <Trash2 className="h-5 w-5 text-destructive" />
+                                              </Button>
+                                          </div>
+                                          </div>
                                         </div>
-                                       <Dialog>
-                                          <DialogTrigger asChild>
-                                             <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
-                                                <Settings className="h-5 w-5 text-muted-foreground" />
-                                             </Button>
-                                          </DialogTrigger>
-                                          <DialogContent>
-                                            <DialogHeader>
-                                              <DialogTitle>Generation Details</DialogTitle>
-                                              <DialogDescription>
-                                                These are the settings used to generate this idea.
-                                              </DialogDescription>
-                                            </DialogHeader>
-                                            <Card className="p-4 border-dashed bg-muted/30">
-                                              <CardContent className="p-2 text-sm space-y-3">
-                                                <p><strong>Topic:</strong> {idea.formValues.topic}</p>
-                                                {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
-                                                <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
-                                                <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
-                                                <p><strong>Tone:</strong> {idea.formValues.tone}</p>
-                                                <div>
-                                                    <strong>Books to Promote:</strong>
-                                                    <ul className="list-disc list-inside">
-                                                        {idea.formValues.books_to_promote && idea.formValues.books_to_promote.length > 0 ? 
-                                                            idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
-                                                            <p className="text-muted-foreground">No books were promoted.</p>
-                                                        }
-                                                    </ul>
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-medium mb-1"><strong>Selected Sources:</strong></h4>
-                                                    <div className="flex flex-wrap gap-2">
-                                                    {idea.selectedSources.length > 0 ? idea.selectedSources.map(source => (
-                                                        <Badge key={source.id} variant="secondary">{source.title}</Badge>
-                                                    )) : <p className="text-muted-foreground">No sources were selected.</p>}
-                                                    </div>
-                                                </div>
-                                              </CardContent>
-                                            </Card>
-                                          </DialogContent>
-                                       </Dialog>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={(e) => { e.stopPropagation(); handleDeleteIdea(idea.id); }}
-                                            aria-label="Delete idea"
-                                            disabled={idea.isGeneratingPost}
-                                        >
-                                            <Trash2 className="h-5 w-5 text-destructive" />
-                                        </Button>
-                                    </div>
-                                    </div>
-                                  </div>
-                              </DialogTrigger>
+                                    </DialogTrigger>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Click to enlarge</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                              <CardFooter className="flex-col items-start gap-4 mt-auto p-4 border-t bg-card">
                                 {idea.conversationId ? (
                                     <Button onClick={() => handleViewContent(idea.conversationId)} className="w-full bg-primary hover:bg-primary/90 mt-2">
