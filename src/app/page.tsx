@@ -11,7 +11,7 @@ import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Info, Lightbulb, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -552,7 +552,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {generatedIdeas.map(idea => (
                      <Dialog key={idea.id}>
-                        <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col">
+                        <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col hover:bg-primary/5 transition-colors">
                           {idea.isLoading ? (
                             <div className="p-6 space-y-4">
                               <Skeleton className="h-6 w-3/4" />
@@ -562,7 +562,7 @@ export default function Home() {
                           ) : (
                             <>
                               <DialogTrigger asChild>
-                                  <div className="cursor-pointer hover:bg-primary/5 transition-colors w-full h-full p-6">
+                                  <div className="cursor-pointer w-full h-full p-6">
                                     <div className="flex justify-between items-start">
                                     <CardTitle className="font-headline text-xl flex items-center gap-2">
                                         <Lightbulb className="h-5 w-5 text-primary" />
@@ -576,7 +576,7 @@ export default function Home() {
                                        <Dialog>
                                           <DialogTrigger asChild>
                                              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
-                                                <Info className="h-5 w-5 text-muted-foreground" />
+                                                <Settings className="h-5 w-5 text-muted-foreground" />
                                              </Button>
                                           </DialogTrigger>
                                           <DialogContent>
@@ -697,7 +697,7 @@ export default function Home() {
                                 <Dialog>
                                   <DialogTrigger asChild>
                                      <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
-                                        <Info className="h-5 w-5 text-muted-foreground" />
+                                        <Settings className="h-5 w-5 text-muted-foreground" />
                                      </Button>
                                   </DialogTrigger>
                                   <DialogContent>
