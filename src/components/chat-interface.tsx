@@ -195,19 +195,45 @@ export function ChatInterface({ messages, onSendMessage, isResponding }: {
 
   const handleCopyContent = () => {
     if (parsedLastMessage.content) {
-      navigator.clipboard.writeText(parsedLastMessage.content).then(() => {
-        toast({
-          title: "Content Copied!",
-          description: "The post content has been copied to your clipboard.",
-        })
-      }).catch(err => {
-        console.error('Failed to copy text: ', err);
-        toast({
-          variant: 'destructive',
-          title: "Copy Failed",
-          description: "Could not copy content to clipboard.",
-        })
-      });
+      const htmlContent = parsedLastMessage.content;
+      // For plain text fallback, strip HTML tags
+      const plainText = htmlContent.replace(/<[^>]*>/g, '');
+
+      try {
+        // Use the modern Clipboard API to copy rich text
+        const blobHtml = new Blob([htmlContent], { type: 'text/html' });
+        const blobText = new Blob([plainText], { type: 'text/plain' });
+        const clipboardItem = new ClipboardItem({
+          'text/html': blobHtml,
+          'text/plain': blobText,
+        });
+
+        navigator.clipboard.write([clipboardItem]).then(() => {
+          toast({
+            title: "Content Copied!",
+            description: "The formatted post has been copied to your clipboard.",
+          });
+        }).catch(err => {
+          console.error('Failed to copy rich text:', err);
+          // If rich text fails, try plain text as a fallback
+          throw err;
+        });
+      } catch (error) {
+        console.warn('Rich text copy failed, falling back to plain text.', error);
+        navigator.clipboard.writeText(plainText).then(() => {
+          toast({
+            title: "Copied as Plain Text",
+            description: "The post was copied as plain text as rich text is not supported.",
+          });
+        }).catch(err => {
+          console.error('Failed to copy plain text fallback:', err);
+          toast({
+            variant: 'destructive',
+            title: "Copy Failed",
+            description: "Could not copy content to clipboard.",
+          });
+        });
+      }
     }
   };
 
