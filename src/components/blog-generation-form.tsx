@@ -31,12 +31,12 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      topic: 'math book',
-      description: 'why math game is important for kid development',
+      topic: '',
+      description: '',
       wordPerPost: '500-1000',
       postType: 'Can be listicles, roundups, curated content, article/research recommendations and how-to guides.',
       tone: 'A conversational and semi-professional tone that engages with the reader on a personal level.',
-      books_to_promote: [{ value: 'https://www.quarto.com/books/9780760397947/super-fun-math-games-for-kids' }],
+      books_to_promote: [],
     },
   });
 
@@ -75,7 +75,7 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
                   <FormControl>
                     <Input
                       id="topic"
-                      placeholder="e.g., 'Math and Child development'"
+                      placeholder="e.g., 'Crochet', 'Canning & Preservation', 'Motorcycle'"
                       {...field}
                       className="text-base focus:ring-accent focus:border-accent"
                       disabled={isGenerating}
@@ -150,7 +150,7 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
                     />
                   </FormControl>
                   <FormDescription>
-                    Describe the structure of the post, e.g., listicle, how-to guide, or roundup.
+                    Describe the structure of the post.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -195,7 +195,7 @@ export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogG
                         <FormControl>
                           <Input
                             {...field}
-                            placeholder="https://example.com/book-link"
+                            placeholder="https://www.quarto.com/books/..."
                             className="text-base focus:ring-accent focus:border-accent"
                             disabled={isGenerating}
                           />
