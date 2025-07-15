@@ -588,6 +588,7 @@ export default function Home() {
                                             </DialogHeader>
                                             <Card className="p-4 border-dashed bg-muted/30">
                                               <CardContent className="p-2 text-sm space-y-3">
+                                                <p><strong>Topic:</strong> {idea.formValues.topic}</p>
                                                 {idea.formValues.description && <p><strong>Description:</strong> {idea.formValues.description}</p>}
                                                 <p><strong>Word Count:</strong> {idea.formValues.wordPerPost}</p>
                                                 <p><strong>Post Type:</strong> {idea.formValues.postType}</p>
@@ -708,6 +709,7 @@ export default function Home() {
                                     </DialogHeader>
                                     <Card className="p-4 border-dashed bg-muted/30">
                                       <CardContent className="p-2 text-sm space-y-3">
+                                          <p><strong>Topic:</strong> {convo.formValues.topic}</p>
                                           {convo.formValues.description && <p><strong>Description:</strong> {convo.formValues.description}</p>}
                                           <p><strong>Word Count:</strong> {convo.formValues.wordPerPost}</p>
                                           <p><strong>Post Type:</strong> {convo.formValues.postType}</p>
