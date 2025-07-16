@@ -199,6 +199,13 @@ export default function Home() {
 
   const handleGenerateIdeas = async (data: FormValues) => {
     setIsGeneratingIdeas(true);
+    
+    try {
+      sessionStorage.setItem('formValues', JSON.stringify(data));
+    } catch (error) {
+      console.error("Failed to save form data to session storage", error);
+    }
+    
     const selectedSourcesForPost = sources.filter((s) => selectedSourceIds.includes(s.id));
     
     // Create placeholder ideas
@@ -258,7 +265,7 @@ export default function Home() {
       
       const ideas = fullContent.split(/----\s*idea\s*----/i)
         .map(idea => idea.trim())
-        .filter(idea => idea => idea);
+        .filter(idea => idea);
 
       const newIdeas: GeneratedIdea[] = ideas.map((ideaContent, index) => {
         return {

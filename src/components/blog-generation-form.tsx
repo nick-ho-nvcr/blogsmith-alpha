@@ -1,6 +1,7 @@
 
 'use client';
 
+import React, { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -27,23 +28,37 @@ interface BlogGenerationFormProps {
   isGeneratingIdeas: boolean;
 }
 
+const defaultFormValues: FormValues = {
+  topic: '',
+  description: '',
+  wordPerPost: '500-1000',
+  postType: 'Can be listicles, roundups, curated content, article/research recommendations and how-to guides.',
+  tone: 'A conversational and semi-professional tone that engages with the reader on a personal level.',
+  books_to_promote: [],
+};
+
 export function BlogGenerationForm({ onGenerateIdeas, isGeneratingIdeas }: BlogGenerationFormProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      topic: '',
-      description: '',
-      wordPerPost: '500-1000',
-      postType: 'Can be listicles, roundups, curated content, article/research recommendations and how-to guides.',
-      tone: 'A conversational and semi-professional tone that engages with the reader on a personal level.',
-      books_to_promote: [],
-    },
+    defaultValues: defaultFormValues,
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "books_to_promote"
   });
+
+  useEffect(() => {
+    try {
+      const storedData = sessionStorage.getItem('formValues');
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        form.reset(parsedData);
+      }
+    } catch (error) {
+      console.error("Failed to load form data from session storage", error);
+    }
+  }, [form]);
 
   const isGenerating = isGeneratingIdeas;
 
