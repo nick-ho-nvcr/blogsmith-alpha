@@ -574,8 +574,7 @@ export default function Home() {
                               <DialogTrigger asChild>
                                   <div className="cursor-pointer w-full h-full p-6">
                                     <div className="flex justify-between items-start">
-                                      <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                          <Lightbulb className="h-5 w-5 text-primary" />
+                                      <CardTitle className="font-headline text-xl">
                                           <p>{createSummary(idea.content, 10)}</p>
                                       </CardTitle>
                                       <div className="flex items-center gap-1 -mt-2 -mr-2">
@@ -669,7 +668,6 @@ export default function Home() {
                           <DialogContent className="sm:max-w-5xl">
                               <DialogHeader>
                               <DialogTitle className="flex items-center gap-2 font-headline text-2xl">
-                                  <Lightbulb className="h-6 w-6 text-primary" />
                                   Blog Post Idea
                               </DialogTitle>
                               </DialogHeader>
