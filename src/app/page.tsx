@@ -565,13 +565,16 @@ export default function Home() {
                           ) : (
                             <>
                               <DialogTrigger asChild>
-                                  <div className="cursor-pointer w-full h-full p-6 relative">
+                                  <div className="cursor-pointer w-full h-full p-6">
                                     <div className="flex justify-between items-start">
                                       <CardTitle className="font-headline text-xl flex items-center gap-2">
                                           <Lightbulb className="h-5 w-5 text-primary" />
                                           <p>{createSummary(idea.content, 10)}</p>
                                       </CardTitle>
                                       <div className="flex items-center gap-1 -mt-2 -mr-2">
+                                        <div className="opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none">
+                                            <Expand className="h-4 w-4 text-muted-foreground" />
+                                        </div>
                                         <Dialog>
                                           <DialogTrigger asChild>
                                               <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
@@ -623,9 +626,6 @@ export default function Home() {
                                             <Trash2 className="h-5 w-5 text-destructive" />
                                         </Button>
                                       </div>
-                                    </div>
-                                    <div className="absolute top-2 right-16 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none">
-                                        <Expand className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                   </div>
                               </DialogTrigger>
