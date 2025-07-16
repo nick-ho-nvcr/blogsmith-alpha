@@ -11,7 +11,7 @@ import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -259,7 +259,7 @@ export default function Home() {
       
       const ideas = fullContent.split(/----\s*idea\s*----/i)
         .map(idea => idea.trim())
-        .filter(idea => idea);
+        .filter(idea => idea => idea);
 
       const newIdeas: GeneratedIdea[] = ideas.map((ideaContent, index) => {
         return {
@@ -400,6 +400,7 @@ export default function Home() {
     ));
 
     const conversation = conversations.find(c => c.id === conversationId);
+    if (!conversation) return;
     const idea = generatedIdeas.find(i => i.conversationId === conversationId);
     
     try {
@@ -407,6 +408,8 @@ export default function Home() {
           method: 'POST',
           body: JSON.stringify({
               inputs: {
+                ...conversation.formValues,
+                books_to_promote: conversation.formValues.books_to_promote?.map(b => b.value).join('\n'),
                 blog_idea: idea?.content || '',
               },
               query: message,
@@ -543,17 +546,18 @@ export default function Home() {
             <div id="blog-generation-form" className="scroll-mt-20">
               <BlogGenerationForm
                 onGenerateIdeas={handleGenerateIdeas}
-                isGeneratingIdeas={isGeneratingIdeas}
+                isGeneratingIdeas={isGeneratingIdeas || isGeneratingPost}
               />
             </div>
-
+            
+            <TooltipProvider>
             {generatedIdeas.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {generatedIdeas.map(idea => (
                      <Dialog key={idea.id}>
-                        <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col hover:bg-primary/5 transition-colors">
+                        <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col group hover:bg-primary/5 transition-colors">
                           {idea.isLoading ? (
                             <div className="p-6 space-y-4">
                               <Skeleton className="h-6 w-3/4" />
@@ -565,16 +569,27 @@ export default function Home() {
                               <DialogTrigger asChild>
                                   <div className="cursor-pointer w-full h-full p-6">
                                     <div className="flex justify-between items-start">
-                                    <CardTitle className="font-headline text-xl flex items-center gap-2">
-                                        <Lightbulb className="h-5 w-5 text-primary" />
-                                        <p>{createSummary(idea.content, 10)}</p>
-                                    </CardTitle>
-                                    <div className="flex items-center gap-2 -mt-2 -mr-2">
+                                      <CardTitle className="font-headline text-xl flex items-center gap-2">
+                                          <Lightbulb className="h-5 w-5 text-primary" />
+                                          <p>{createSummary(idea.content, 10)}</p>
+                                      </CardTitle>
+                                      <div className="flex items-center gap-1 -mt-2 -mr-2">
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <div className="h-8 w-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Expand className="h-4 w-4 text-muted-foreground" />
+                                            </div>
+                                          </TooltipTrigger>
+                                          <TooltipContent>
+                                            <p>Click to see more</p>
+                                          </TooltipContent>
+                                        </Tooltip>
+
                                         <Dialog>
                                           <DialogTrigger asChild>
-                                             <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
+                                              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
                                                 <Settings className="h-5 w-5 text-muted-foreground" />
-                                             </Button>
+                                              </Button>
                                           </DialogTrigger>
                                           <DialogContent>
                                             <DialogHeader>
@@ -592,10 +607,10 @@ export default function Home() {
                                                 <p><strong>Tone:</strong> {idea.formValues.tone}</p>
                                                 <div>
                                                     <strong>Books to Promote:</strong>
-                                                    <ul className="list-disc list-inside">
+                                                    <ul className="list-disc list-inside ml-4">
                                                         {idea.formValues.books_to_promote && idea.formValues.books_to_promote.length > 0 ? 
                                                             idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
-                                                            <p className="text-muted-foreground">No books were promoted.</p>
+                                                            <li className="text-muted-foreground list-none">No books were promoted.</li>
                                                         }
                                                     </ul>
                                                 </div>
@@ -620,7 +635,7 @@ export default function Home() {
                                         >
                                             <Trash2 className="h-5 w-5 text-destructive" />
                                         </Button>
-                                    </div>
+                                      </div>
                                     </div>
                                   </div>
                               </DialogTrigger>
@@ -633,7 +648,7 @@ export default function Home() {
                                 ) : (
                                   <Button
                                     onClick={() => handleGeneratePostFromIdea(idea)}
-                                    disabled={isGeneratingIdeas || idea.isGeneratingPost}
+                                    disabled={isGeneratingIdeas || !!idea.isGeneratingPost}
                                     className="w-full bg-accent hover:bg-accent/90 mt-2"
                                   >
                                     {idea.isGeneratingPost ? (
@@ -671,6 +686,7 @@ export default function Home() {
                 </div>
               </div>
             )}
+            </TooltipProvider>
 
             {conversations.length > 0 && (
               <div className="space-y-8 mt-12 scroll-mt-20" id="conversation-section">
@@ -713,10 +729,10 @@ export default function Home() {
                                           <p><strong>Tone:</strong> {convo.formValues.tone}</p>
                                           <div>
                                               <strong>Books to Promote:</strong>
-                                              <ul className="list-disc list-inside">
+                                              <ul className="list-disc list-inside ml-4">
                                                   {convo.formValues.books_to_promote && convo.formValues.books_to_promote.length > 0 ? 
                                                       convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
-                                                      <p className="text-muted-foreground">No books were promoted.</p>
+                                                      <li className="text-muted-foreground list-none">No books were promoted.</li>
                                                   }
                                               </ul>
                                           </div>
@@ -770,3 +786,5 @@ export default function Home() {
     </Suspense>
   );
 }
+
+    
