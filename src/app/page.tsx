@@ -11,7 +11,7 @@ import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon, Info } from 'lucide-react';
+import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -555,7 +555,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {generatedIdeas.map(idea => (
                      <Dialog key={idea.id}>
-                        <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col group hover:bg-primary/5 transition-colors">
+                        <Card className="shadow-xl rounded-xl overflow-hidden bg-card/80 backdrop-blur-sm w-full flex flex-col group/item hover:bg-primary/5 transition-colors">
                           {idea.isLoading ? (
                             <div className="p-6 space-y-4">
                               <Skeleton className="h-6 w-3/4" />
@@ -565,7 +565,7 @@ export default function Home() {
                           ) : (
                             <>
                               <DialogTrigger asChild>
-                                  <div className="cursor-pointer w-full h-full p-6">
+                                  <div className="cursor-pointer w-full h-full p-6 relative">
                                     <div className="flex justify-between items-start">
                                       <CardTitle className="font-headline text-xl flex items-center gap-2">
                                           <Lightbulb className="h-5 w-5 text-primary" />
@@ -623,6 +623,9 @@ export default function Home() {
                                             <Trash2 className="h-5 w-5 text-destructive" />
                                         </Button>
                                       </div>
+                                    </div>
+                                    <div className="absolute top-2 right-16 opacity-0 group-hover/item:opacity-100 transition-opacity pointer-events-none">
+                                        <Expand className="h-4 w-4 text-muted-foreground" />
                                     </div>
                                   </div>
                               </DialogTrigger>
