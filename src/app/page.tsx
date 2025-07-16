@@ -15,7 +15,6 @@ import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon, 
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Dialog,
   DialogContent,
@@ -550,7 +549,6 @@ export default function Home() {
               />
             </div>
             
-            <TooltipProvider>
             {generatedIdeas.length > 0 && (
               <div className="space-y-8 mt-12">
                 <h2 className="text-3xl font-headline tracking-tight text-primary">Generated Ideas</h2>
@@ -574,17 +572,6 @@ export default function Home() {
                                           <p>{createSummary(idea.content, 10)}</p>
                                       </CardTitle>
                                       <div className="flex items-center gap-1 -mt-2 -mr-2">
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <div className="h-8 w-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Expand className="h-4 w-4 text-muted-foreground" />
-                                            </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent>
-                                            <p>Click to see more</p>
-                                          </TooltipContent>
-                                        </Tooltip>
-
                                         <Dialog>
                                           <DialogTrigger asChild>
                                               <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()} aria-label="View generation details">
@@ -686,7 +673,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-            </TooltipProvider>
 
             {conversations.length > 0 && (
               <div className="space-y-8 mt-12 scroll-mt-20" id="conversation-section">
