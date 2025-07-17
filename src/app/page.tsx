@@ -319,7 +319,7 @@ export default function Home() {
     setActiveAccordionItem(tempId);
 
     const references = selectedSources
-      .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
+      .map((source, index) => `${index + 1}. URL: ${source.link}\nTitle: ${source.title}\nContent: ${source.content || source.snippet}`)
       .join('\n\n');
     
     const apiPayload = {
