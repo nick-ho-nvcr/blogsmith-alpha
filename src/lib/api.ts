@@ -4,7 +4,7 @@
 import type { Source, FormValues, GeneratedIdea } from '@/types';
 
 const API_BASE_URL = 'https://quarto.nvcr.ai/api';
-const BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4";
+const BEARER_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxODE4NTEsImlhdCI6MTc1MzAwOTA1MSwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1MzAwOTA1MX1dLCJzZXNzaW9uX2lkIjoiN2U1ODI3ZTctMDlkOC00ZjM0LTkzODEtZjVjMGE4MmE0Y2UyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.4Iex8gyBMP1CRobQOXSsrKw9INmqeGj51brsjQ3bDSc";
 const SESSION_ID = "2676be630e97cc10";
 
 
@@ -25,9 +25,8 @@ interface ApiSource {
 
 export const fetchSources = async (): Promise<Source[]> => {
     const response = await fetch(`${API_BASE_URL}/blogs`, {
-        headers: {
-            "Authorization": `Bearer ${BEARER_TOKEN}`,
-        }
+        headers: getHeaders(),
+        credentials: 'omit',
     });
 
     if (!response.ok) {
@@ -55,6 +54,7 @@ export const deleteSource = async (id: string): Promise<Response> => {
     const response = await fetch(`${API_BASE_URL}/blogs/${id}`, {
         method: 'DELETE',
         headers: getHeaders(),
+        credentials: 'omit',
     });
 
     if (!response.ok) {
@@ -87,6 +87,7 @@ export const generateIdeas = async (data: FormValues, selectedSources: Source[])
         method: 'POST',
         body: JSON.stringify(payload),
         headers: getHeaders(),
+        credentials: 'omit',
     });
 };
 
@@ -115,6 +116,7 @@ export const generatePost = async (idea: GeneratedIdea): Promise<Response> => {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: getHeaders(),
+        credentials: 'omit',
     });
 };
 
@@ -134,5 +136,6 @@ export const sendChatMessage = async (message: string, conversationId: string, f
         method: 'POST',
         body: JSON.stringify(payload),
         headers: getHeaders(),
+        credentials: 'omit',
     });
 };
