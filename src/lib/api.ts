@@ -30,7 +30,7 @@ export const fetchSources = async (): Promise<Source[]> => {
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to fetch' }));
+        const errorData = await response.json().catch(() => ({}));
         const errorMessage = errorData.message + `(Status: ${response.status})`;
         throw new Error(errorMessage);
     }
