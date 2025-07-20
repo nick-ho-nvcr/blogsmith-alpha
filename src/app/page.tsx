@@ -24,15 +24,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { fetchSources, deleteSource, generateIdeas, generatePost, sendChatMessage } from '@/lib/api';
 
-
-interface ApiSource {
-  id: string;
-  title: string;
-  url: string;
-  excerpt: string;
-  content: string;
-}
 
 // Helper to create a summary from the content
 const createSummary = (htmlContent: string, wordLimit: number = 10): string => {
@@ -101,39 +94,13 @@ export default function Home() {
 
 
   useEffect(() => {
-    const fetchSources = async () => {
+    const loadSources = async () => {
       setIsLoadingSources(true);
       try {
-        const response = await fetch('https://quarto.nvcr.ai/api/blogs', {
-          credentials: 'omit',
-          headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
-            "X-Session-Id": "2676be630e97cc10"
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const errorMessage = errorData.message + `(Status: ${response.status})`;
-          throw new Error(errorMessage);
-        }
-
-        const result = await response.json();
-
-        if (result.success && Array.isArray(result.data)) {
-          const fetchedSources: Source[] = result.data.map((item: ApiSource) => ({
-            id: item.id,
-            title: item.title,
-            link: item.url,
-            snippet: item.excerpt,
-            content: item.content,
-          }));
-          setSources(fetchedSources);
-          setSelectedSourceIds(fetchedSources.map((s) => s.id));
-          setAuthError(null);
-        } else {
-          throw new Error(result.message || 'API returned an unexpected data structure.');
-        }
+        const fetchedSources = await fetchSources();
+        setSources(fetchedSources);
+        setSelectedSourceIds(fetchedSources.map((s) => s.id));
+        setAuthError(null);
       } catch (error: any) {
         setAuthError(`Please ensure you are logged in via the Chrome Extension. Error: ${error.message}`);
         setSources([]);
@@ -142,21 +109,13 @@ export default function Home() {
       }
     };
 
-    fetchSources();
+    loadSources();
   }, []);
 
   const handleDeleteSource = async (id: string) => {
     setIsLoadingDelete(id);
     try {
-      const response = await fetch(`https://quarto.nvcr.ai/api/blogs/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Failed to delete source. (Status: ${response.status})`);
-      }
+      await deleteSource(id);
       
       const updatedSources = sources.filter((source) => source.id !== id);
       setSources(updatedSources);
@@ -217,35 +176,9 @@ export default function Home() {
       isLoading: true,
     }));
     setGeneratedIdeas(prev => [...placeholderIdeas, ...prev.filter(idea => !idea.isLoading)]);
-
-    const references = selectedSourcesForPost
-      .map((source, index) => `${index + 1}. ${source.title}\n${source.content || source.snippet}`)
-      .join('\n\n');
     
-    const apiPayload = {
-      inputs: {
-        topic: data.topic,
-        description: data.description || '',
-        word_per_post: data.wordPerPost,
-        books_to_promote: data.books_to_promote?.map(book => book.value).join('\n'),
-        post_type: data.postType,
-        tone: data.tone,
-        references: references,
-      },
-      query: 'start',
-    };
-
     try {
-      const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/ideas/create', {
-        method: 'POST',
-        body: JSON.stringify(apiPayload),
-        credentials: 'omit',
-        headers: {
-          'Content-Type': 'application/json',
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
-          "X-Session-Id": "2676be630e97cc10"
-        },
-      });
+      const response = await generateIdeas(data, selectedSourcesForPost);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -305,49 +238,20 @@ export default function Home() {
     setGeneratedIdeas(prev => prev.map(i => i.id === idea.id ? { ...i, isGeneratingPost: true } : i));
     
     const tempId = `temp-${Date.now()}`;
-    const { formValues, selectedSources, content: ideaContent } = idea;
 
     const newConversation: Conversation = {
       id: tempId,
       topic: createSummary(idea.content, 10),
       messages: [{ role: 'assistant', content: '' }],
       isGenerating: true,
-      formValues: formValues,
-      selectedSources: selectedSources,
+      formValues: idea.formValues,
+      selectedSources: idea.selectedSources,
     };
     setConversations(prev => [newConversation, ...prev]);
     setActiveAccordionItem(tempId);
 
-    const references = selectedSources
-      .map((source, index) => `${index + 1}. URL: ${source.link}\nTitle: ${source.title}\nContent: ${source.content || source.snippet}`)
-      .join('\n\n');
-    
-    const apiPayload = {
-      inputs: {
-        topic: formValues.topic,
-        description: formValues.description || '',
-        word_per_post: formValues.wordPerPost,
-        books_to_promote: formValues.books_to_promote?.map(book => book.value).join('\n'),
-        post_type: formValues.postType,
-        tone: formValues.tone,
-        references: references,
-        blog_idea: ideaContent, // Pass the idea content
-      },
-      query: 'start',
-      conversation_id: '',
-    };
-
     try {
-        const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
-            method: 'POST',
-            body: JSON.stringify(apiPayload),
-            credentials: 'omit',
-            headers: {
-              'Content-Type': 'application/json',
-              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
-              "X-Session-Id": "2676be630e97cc10"
-            },
-        });
+        const response = await generatePost(idea);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -410,24 +314,7 @@ export default function Home() {
     const idea = generatedIdeas.find(i => i.conversationId === conversationId);
     
     try {
-      const response = await fetch('https://quarto.nvcr.ai/api/blogsmith/chat', {
-          method: 'POST',
-          body: JSON.stringify({
-              inputs: {
-                ...conversation.formValues,
-                books_to_promote: conversation.formValues.books_to_promote?.map(b => b.value).join('\n'),
-                blog_idea: idea?.content || '',
-              },
-              query: message,
-              conversation_id: conversationId,
-          }),
-          credentials: 'omit',
-          headers: {
-            'Content-Type': 'application/json',
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
-            "X-Session-Id": "2676be630e97cc10"
-          },
-      });
+      const response = await sendChatMessage(message, conversationId, conversation.formValues, idea?.content || '');
 
       if (!response.ok) {
           const errorText = await response.text();
@@ -783,7 +670,3 @@ export default function Home() {
     </Suspense>
   );
 }
-
-    
-
-    

@@ -49,3 +49,18 @@ export interface GeneratedIdea {
     isGeneratingPost?: boolean;
     conversationId?: string;
 }
+
+export interface ApiPayload {
+    inputs: {
+        topic: string;
+        description: string;
+        word_per_post: string;
+        books_to_promote?: string;
+        post_type: string;
+        tone: string;
+        references: string;
+        blog_idea?: string;
+    };
+    query: string;
+    conversation_id?: string;
+}
