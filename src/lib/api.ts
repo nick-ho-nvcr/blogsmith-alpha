@@ -13,8 +13,8 @@ const getHeaders = () => ({
     "Authorization": `Bearer ${BEARER_TOKEN}`,
     "X-Session-Id": SESSION_ID,
     "X-Version": 'production',
-    credentials: 'omit',
-    // credentials: 'include',
+    "credentials": 'omit',
+    // "credentials": 'include',
 });
 
 interface ApiSource {
