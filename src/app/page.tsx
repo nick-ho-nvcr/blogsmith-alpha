@@ -11,7 +11,7 @@ import { AuthErrorDisplay } from '@/components/auth-error-display';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Trash2, Settings, Lightbulb, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Trash2, Settings, Expand, Wand2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, AccordionHeader } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
@@ -107,7 +107,7 @@ export default function Home() {
         const response = await fetch('https://quarto.nvcr.ai/api/blogs', {
           credentials: 'omit',
           headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
             "X-Session-Id": "2676be630e97cc10"
           },
         });
@@ -242,7 +242,7 @@ export default function Home() {
         credentials: 'omit',
         headers: {
           'Content-Type': 'application/json',
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
           "X-Session-Id": "2676be630e97cc10"
         },
       });
@@ -344,7 +344,7 @@ export default function Home() {
             credentials: 'omit',
             headers: {
               'Content-Type': 'application/json',
-              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
               "X-Session-Id": "2676be630e97cc10"
             },
         });
@@ -424,7 +424,7 @@ export default function Home() {
           credentials: 'omit',
           headers: {
             'Content-Type': 'application/json',
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZGIzN2UyOC0xYjk5LTRiNDItYWRmYy04YWI3ZDUxYzIyNzEiLCJhdWQiOiIiLCJleHAiOjE3NTI3MzE3NjMsImlhdCI6MTc1MjU1ODk2MywiZW1haWwiOiJjYXNAbm91dmVsbGVjcmVhdGlvbnMuYWkiLCJwaG9uZSI6IiIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIiwicHJvdmlkZXJzIjpbImVtYWlsIl19LCJ1c2VyX21ldGFkYXRhIjp7ImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwicm9sZSI6InN1cGFiYXNlX2FkbWluIiwiYWFsIjoiYWFsMSIsImFtciI6W3sibWV0aG9kIjoicGFzc3dvcmQiLCJ0aW1lc3RhbXAiOjE3NTI1NTg5NjN9XSwic2Vzc2lvbl9pZCI6ImJkMzBiZDE5LTJlZmMtNDhkMi1hNTc1LTQ0NjRiNGM1MDg5OCIsImlzX2Fub255bW91cyI6ZmFsc2V9.W1dHCmMsCt3hnvYRonKPFEPEqVLLq0HzZIsuqZYF5PU",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0ZWRiOTFmZC0yOWFjLTQ4MzEtYjgyMC1hYTNkMTcwNzdlMjQiLCJhdWQiOiIiLCJleHAiOjE3NTMxNjkyMDYsImlhdCI6MTc1Mjk5NjQwNiwiZW1haWwiOiJuaWNrLmhvQG5vdXZlbGxlY3JlYXRpb25zLmFpIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImdvb2dsZSJdfSwidXNlcl9tZXRhZGF0YSI6eyJhdmF0YXJfdXJsIjoiaHR0cHM6Ly9saDMuZ29vZ2xldXNlcmNvbnRlbnQuY29tL2EvQUNnOG9jS2lLbVVqU19WNjU4dTdNQUJ6QUJnR3pPY1lETUlReUo1dzB6SS1qZmdYR1VzaHFBPXM5Ni1jIiwiY3VzdG9tX2NsYWltcyI6eyJoZCI6Im5vdXZlbGxlY3JlYXRpb25zLmFpIn0sImVtYWlsIjoibmljay5ob0Bub3V2ZWxsZWNyZWF0aW9ucy5haSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiJOaWNrIEhvIiwiaXNzIjoiaHR0cHM6Ly9hY2NvdW50cy5nb29nbGUuY29tIiwibmFtZSI6Ik5pY2sgSG8iLCJwaG9uZV92ZXJpZmllZCI6ZmFsc2UsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaUttVWpTX1Y2NTh1N01BQnpBQmdHek9jWURNSVF5SjV3MHpJLWpmZ1hHVXNocUE9czk2LWMiLCJwcm92aWRlcl9pZCI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSIsInN1YiI6IjEwMDI4NDE3OTA2OTk2MDk4MzYyOSJ9LCJyb2xlIjoic3VwYWJhc2VfYWRtaW4iLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc1Mjk5NjQwNn1dLCJzZXNzaW9uX2lkIjoiZTg3Zjk0NDktMmVkMC00ZDQ4LTk5ZDItYTM1NzgyMDhmODgyIiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.544ZFU_7zFyoYYMLkcHQRU4ooHz25hE1FUqJDoC9Eh4",
             "X-Session-Id": "2676be630e97cc10"
           },
       });
@@ -587,7 +587,7 @@ export default function Home() {
                                                 <Settings className="h-5 w-5 text-muted-foreground" />
                                               </Button>
                                           </DialogTrigger>
-                                          <DialogContent>
+                                          <DialogContent className="sm:max-w-2xl">
                                             <DialogHeader>
                                               <DialogTitle>Generation Details</DialogTitle>
                                               <DialogDescription>
@@ -707,7 +707,7 @@ export default function Home() {
                                         <Settings className="h-5 w-5 text-muted-foreground" />
                                      </Button>
                                   </DialogTrigger>
-                                  <DialogContent>
+                                  <DialogContent className="sm:max-w-2xl">
                                     <DialogHeader>
                                       <DialogTitle>Generation Details</DialogTitle>
                                       <DialogDescription>
