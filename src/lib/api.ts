@@ -13,8 +13,6 @@ const getHeaders = () => ({
     "Authorization": `Bearer ${BEARER_TOKEN}`,
     "X-Session-Id": SESSION_ID,
     "X-Version": 'production',
-    "credentials": 'omit',
-    // "credentials": 'include',
 });
 
 interface ApiSource {
@@ -27,11 +25,13 @@ interface ApiSource {
 
 export const fetchSources = async (): Promise<Source[]> => {
     const response = await fetch(`${API_BASE_URL}/blogs`, {
-        headers: getHeaders(),
+        headers: {
+            "Authorization": `Bearer ${BEARER_TOKEN}`,
+        }
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => ({ message: 'Failed to fetch' }));
         const errorMessage = errorData.message + `(Status: ${response.status})`;
         throw new Error(errorMessage);
     }
