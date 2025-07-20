@@ -12,6 +12,9 @@ const getHeaders = () => ({
     'Content-Type': 'application/json',
     "Authorization": `Bearer ${BEARER_TOKEN}`,
     "X-Session-Id": SESSION_ID,
+    "X-Version": 'production',
+    credentials: 'omit',
+    // credentials: 'include',
 });
 
 interface ApiSource {
@@ -24,7 +27,6 @@ interface ApiSource {
 
 export const fetchSources = async (): Promise<Source[]> => {
     const response = await fetch(`${API_BASE_URL}/blogs`, {
-        credentials: 'omit',
         headers: getHeaders(),
     });
 
@@ -52,7 +54,7 @@ export const fetchSources = async (): Promise<Source[]> => {
 export const deleteSource = async (id: string): Promise<Response> => {
     const response = await fetch(`${API_BASE_URL}/blogs/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
+        headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -84,7 +86,6 @@ export const generateIdeas = async (data: FormValues, selectedSources: Source[])
     return fetch(`${API_BASE_URL}/blogsmith/ideas/create`, {
         method: 'POST',
         body: JSON.stringify(payload),
-        credentials: 'omit',
         headers: getHeaders(),
     });
 };
@@ -113,7 +114,6 @@ export const generatePost = async (idea: GeneratedIdea): Promise<Response> => {
     return fetch(`${API_BASE_URL}/blogsmith/chat`, {
         method: 'POST',
         body: JSON.stringify(payload),
-        credentials: 'omit',
         headers: getHeaders(),
     });
 };
@@ -133,7 +133,6 @@ export const sendChatMessage = async (message: string, conversationId: string, f
     return fetch(`${API_BASE_URL}/blogsmith/chat`, {
         method: 'POST',
         body: JSON.stringify(payload),
-        credentials: 'omit',
         headers: getHeaders(),
     });
 };

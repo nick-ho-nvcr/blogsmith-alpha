@@ -664,7 +664,7 @@ export default function Home() {
       <footer className="text-center py-4 mt-8 border-t border-primary/20">
         <div className="container mx-auto flex justify-between items-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Nouvelle Creations. All rights reserved.</p>
-            <p>v1.0.4</p>
+            <p>v1.0.5</p>
         </div>
       </footer>
     </Suspense>
