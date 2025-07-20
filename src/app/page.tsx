@@ -605,7 +605,7 @@ export default function Home() {
                                                     <strong>Books to Promote:</strong>
                                                     <ul className="list-disc list-inside ml-4">
                                                         {idea.formValues.books_to_promote && idea.formValues.books_to_promote.length > 0 ? 
-                                                            idea.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
+                                                            idea.formValues.books_to_promote.map(book => <li key={book.value} className="break-all">{book.value}</li>) :
                                                             <li className="text-muted-foreground list-none">No books were promoted.</li>
                                                         }
                                                     </ul>
@@ -725,7 +725,7 @@ export default function Home() {
                                               <strong>Books to Promote:</strong>
                                               <ul className="list-disc list-inside ml-4">
                                                   {convo.formValues.books_to_promote && convo.formValues.books_to_promote.length > 0 ? 
-                                                      convo.formValues.books_to_promote.map(book => <li key={book.value}>{book.value}</li>) :
+                                                      convo.formValues.books_to_promote.map(book => <li key={book.value} className="break-all">{book.value}</li>) :
                                                       <li className="text-muted-foreground list-none">No books were promoted.</li>
                                                   }
                                               </ul>
